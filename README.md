@@ -83,15 +83,6 @@ The script will:
 
 After it finishes you will see a big success banner and the **update command reminder** (git pull).
 
-The script will:
-
-- Ask which drive letter to place `proxydictionary\` on (C, D, E, ...)
-- Check for git (auto-attempts install via winget if missing)
-- Clone the repo
-- Give you the exact path to open `index.html`
-
-After it finishes you will see a big success banner and the **update command reminder**.
-
 ### Manual (git users)
 
 ```powershell
