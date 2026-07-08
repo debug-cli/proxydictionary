@@ -1,162 +1,158 @@
 @echo off
-setlocal enabledelayedexpansion
+setlocal EnableDelayedExpansion
 
-:: =====================================================
-::  proxydictionairy - One-Run Installer (Windows)
-::  Drops the Proxy Dictionary to your chosen drive
-::  via git so you can git pull for fresh mirrors later.
-:: =====================================================
+:: proxydictionairy Windows bootstrap installer
+:: Flashy but 100% compatible with stock blue Windows PowerShell + CMD
+:: Asks drive letter, ensures git, clones so you can git pull later.
+
+title proxydictionairy Installer
 
 powershell -NoProfile -Command ^
-    "Write-Host '';^
-     Write-Host '===========================================================' -ForegroundColor Cyan;^
-     Write-Host '   PROXYDICTIONAIRY  |  PROXY DICTIONARY DEPLOYMENT       ' -ForegroundColor White -BackgroundColor DarkBlue;^
-     Write-Host '===========================================================' -ForegroundColor Cyan;^
-     Write-Host '';^
-     Write-Host '  Zero-dependency monolithic recon payload' -ForegroundColor Green;^
-     Write-Host '  4100+ verified proxy mirrors • client-side only' -ForegroundColor Green;^
-     Write-Host '  Updates via git pull • works in air-gapped browsers' -ForegroundColor Green;^
-     Write-Host '';^
-     Write-Host '  This script will:' -ForegroundColor Yellow;^
-     Write-Host '    1. Ask which DRIVE (C D E ...) to place the folder on' -ForegroundColor Yellow;^
-     Write-Host '    2. Check / install git if missing (winget)' -ForegroundColor Yellow;^
-     Write-Host '    3. git clone the dictionary to DRIVE:\proxydictionairy' -ForegroundColor Yellow;^
-     Write-Host '';^
-     Write-Host '-----------------------------------------------------------' -ForegroundColor DarkGray;^
-     Write-Host '  DISCLAIMER (READ THIS)' -ForegroundColor Red -BackgroundColor Black;^
-     Write-Host '  The command you used to get this .bat (curl / iwr | iex style)' -ForegroundColor Yellow;^
-     Write-Host '  can look shady to antivirus and security tools.' -ForegroundColor Yellow;^
-     Write-Host '  THIS IS AN OPEN SOURCE PROJECT.' -ForegroundColor Green;^
-     Write-Host '  You can (and should) paste the raw URL of install.bat into' -ForegroundColor Yellow;^
-     Write-Host '  VirusTotal.com to verify before running.' -ForegroundColor Yellow;^
-     Write-Host '  Nothing is hidden. Full source is in the public repo.' -ForegroundColor Yellow;^
-     Write-Host '-----------------------------------------------------------' -ForegroundColor DarkGray;^
-     Write-Host ''"
+"$esc = [char]27; ^
+Write-Host ''; ^
+Write-Host ('='*60) -ForegroundColor Cyan; ^
+Write-Host '  PROXYDICTIONAIRY  -  PROXY DICTIONARY  BOOTSTRAP' -ForegroundColor White -BackgroundColor DarkBlue; ^
+Write-Host ('='*60) -ForegroundColor Cyan; ^
+Write-Host ''; ^
+Write-Host '  Monolithic client-side proxy index (4100+ mirrors)' -ForegroundColor Green; ^
+Write-Host '  Zero deps | localStorage favs | one-click copy | git-updatable' -ForegroundColor Green; ^
+Write-Host ''; ^
+Write-Host '  This .bat will:' -ForegroundColor Yellow; ^
+Write-Host '    - Prompt for a drive letter (C, D, E...)' -ForegroundColor Yellow; ^
+Write-Host '    - Auto-install git via winget if missing' -ForegroundColor Yellow; ^
+Write-Host '    - Clone to DRIVE:\proxydictionairy' -ForegroundColor Yellow; ^
+Write-Host ''; ^
+Write-Host ('-'*60) -ForegroundColor DarkGray; ^
+Write-Host '  SHADY-LOOKING COMMAND DISCLAIMER' -ForegroundColor Red -BackgroundColor Black; ^
+Write-Host '  Running a downloaded .bat via curl/iwr can trigger AV.' -ForegroundColor Yellow; ^
+Write-Host '  THIS PROJECT IS FULLY OPEN SOURCE AND AUDITABLE.' -ForegroundColor Green; ^
+Write-Host '  1. Copy the URL you used to fetch install.bat' -ForegroundColor Yellow; ^
+Write-Host '  2. Go to https://www.virustotal.com and scan it' -ForegroundColor Yellow; ^
+Write-Host '  3. Read the source in the repo before trusting' -ForegroundColor Yellow; ^
+Write-Host ('-'*60) -ForegroundColor DarkGray; ^
+Write-Host ''"
 
 echo.
-echo Press ANY key to continue (or Ctrl+C to abort)...
-pause >nul
-
-:: --- Ask for drive letter -------------------------------------------------
-:ASK_DRIVE
-powershell -NoProfile -Command "Write-Host '>>> Which drive letter should we install to?' -ForegroundColor Cyan; Write-Host '    Example: type D and press Enter   (recommended if you have D:)' -ForegroundColor DarkGray; Write-Host '    Common choices: C   D   E   F' -ForegroundColor DarkGray"
-set /p DRIVELETTER="Drive letter (single letter, no colon): "
-
-:: Sanitize
-set DRIVELETTER=%DRIVELETTER:~0,1%
-set DRIVELETTER=%DRIVELETTER:~0,1%
-
-if "%DRIVELETTER%"=="" goto ASK_DRIVE
-
-:: Uppercase
-for %%A in ("a=A" "b=B" "c=C" "d=D" "e=E" "f=F" "g=G" "h=H" "i=I" "j=J" "k=K" "l=L" "m=M" "n=N" "o=O" "p=P" "q=Q" "r=R" "s=S" "t=T" "u=U" "v=V" "w=W" "x=X" "y=Y" "z=Z") do (
-    set DRIVELETTER=!DRIVELETTER:%%~A!
+choice /C YN /M "Continue with installation? (Y=Yes, N=Abort)"
+if errorlevel 2 (
+  powershell -NoProfile -Command "Write-Host 'Aborted.' -ForegroundColor Red"
+  goto :eof
 )
 
-echo %DRIVELETTER% | findstr /R "^[A-Z]$" >nul
-if errorlevel 1 (
-    powershell -NoProfile -Command "Write-Host 'ERROR: Must be a single letter A-Z' -ForegroundColor Red"
-    goto ASK_DRIVE
+:: Drive letter prompt with validation + examples
+:DRIVE_PROMPT
+powershell -NoProfile -Command ^
+"Write-Host ''; ^
+ Write-Host '>>> STEP 1: Choose installation drive' -ForegroundColor Cyan -BackgroundColor Black; ^
+ Write-Host '    Type ONLY the letter and press ENTER' -ForegroundColor Gray; ^
+ Write-Host ''; ^
+ Write-Host '    EXAMPLES:' -ForegroundColor White; ^
+ Write-Host '      D     -> will use D:\proxydictionairy' -ForegroundColor DarkGray; ^
+ Write-Host '      C     -> will use C:\proxydictionairy (works too)' -ForegroundColor DarkGray; ^
+ Write-Host '      E     -> E:\proxydictionairy' -ForegroundColor DarkGray; ^
+ Write-Host ''"
+
+set /p "DRIVE=Drive letter [A-Z]: "
+set DRIVE=%DRIVE:~0,1%
+set DRIVE=%DRIVE:~0,1%
+
+for %%L in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
+  if /I "%DRIVE%"=="%%L" set DRIVE=%%L
 )
 
-set TARGET=%DRIVELETTER%:\proxydictionairy
+echo %DRIVE%| findstr /R "^[A-Z]$" >nul 2>&1 || (
+  powershell -NoProfile -Command "Write-Host 'Invalid drive letter. Must be A-Z.' -ForegroundColor Red"
+  goto DRIVE_PROMPT
+)
 
-powershell -NoProfile -Command "Write-Host ''; Write-Host 'Target location: %TARGET%' -ForegroundColor White -BackgroundColor DarkGreen; Write-Host ''"
+set "TARGET=%DRIVE%:\proxydictionairy"
 
-if exist "%TARGET%" (
-    powershell -NoProfile -Command "Write-Host 'WARNING: %TARGET% already exists.' -ForegroundColor Yellow"
-    choice /C YN /M "Do you want to UPDATE it in place (git pull) instead of fresh clone? (Y/N)"
-    if errorlevel 2 (
-        powershell -NoProfile -Command "Write-Host 'Aborted by user.' -ForegroundColor Red"
-        goto END
-    )
-    set DO_UPDATE=1
+powershell -NoProfile -Command "Write-Host ''; Write-Host \"Target folder: %TARGET%\" -ForegroundColor White -BackgroundColor DarkGreen; Write-Host ''"
+
+if exist "%TARGET%\.git" (
+  powershell -NoProfile -Command "Write-Host 'Existing git repo detected. Will UPDATE instead of full clone.' -ForegroundColor Yellow"
+  set "MODE=update"
+) else if exist "%TARGET%" (
+  powershell -NoProfile -Command "Write-Host 'Folder exists but is not a git repo. Will remove and fresh clone.' -ForegroundColor Yellow"
+  set "MODE=clone"
 ) else (
-    set DO_UPDATE=0
+  set "MODE=clone"
 )
 
-:: --- Git check / install --------------------------------------------------
+:: Ensure git
 where git >nul 2>&1
 if %errorlevel% neq 0 (
-    powershell -NoProfile -Command "Write-Host 'git not found. Attempting install via winget...' -ForegroundColor Yellow"
-    winget --version >nul 2>&1
-    if %errorlevel% neq 0 (
-        powershell -NoProfile -Command "Write-Host 'winget not available. Please install Git manually:' -ForegroundColor Red; Write-Host 'https://git-scm.com/download/win' -ForegroundColor Cyan"
-        goto END
-    )
-    echo Installing Git for Windows (this may take a minute and may require admin rights)...
-    winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements
-    if %errorlevel% neq 0 (
-        powershell -NoProfile -Command "Write-Host 'Git install failed. Try running this script from an Administrator PowerShell window.' -ForegroundColor Red"
-        goto END
-    )
-    :: refresh path
-    set "PATH=%PATH%;C:\Program Files\Git\bin;C:\Program Files\Git\cmd"
-    where git >nul 2>&1
-    if %errorlevel% neq 0 (
-        powershell -NoProfile -Command "Write-Host 'Git still not in PATH. Close and reopen your terminal, then run the installer again.' -ForegroundColor Red"
-        goto END
-    )
-    powershell -NoProfile -Command "Write-Host 'git installed successfully.' -ForegroundColor Green"
-) else (
-    powershell -NoProfile -Command "Write-Host 'git found: ' -NoNewline -ForegroundColor Green; git --version"
+  powershell -NoProfile -Command "Write-Host 'git not found on PATH. Trying winget...' -ForegroundColor Yellow"
+  winget --version >nul 2>&1 || (
+    powershell -NoProfile -Command "Write-Host 'No winget. Install Git manually from https://git-scm.com then re-run this.' -ForegroundColor Red; exit 1"
+  )
+  echo Running winget install for Git...
+  winget install --id Git.Git -e --source winget --accept-package-agreements --accept-source-agreements --silent
+  set "PATH=%PATH%;C:\Program Files\Git\cmd;C:\Program Files\Git\bin"
+  where git >nul 2>&1 || (
+    powershell -NoProfile -Command "Write-Host 'Git install appeared to succeed but not in PATH yet. Restart this terminal and run installer again.' -ForegroundColor Red; exit 1"
+  )
+  powershell -NoProfile -Command "Write-Host 'Git is now available.' -ForegroundColor Green"
 )
 
-:: --- Clone or Update ------------------------------------------------------
-powershell -NoProfile -Command "Write-Host ''; Write-Host '>>> Preparing proxydictionairy...' -ForegroundColor Cyan"
+powershell -NoProfile -Command "Write-Host ('git version: ' + (git --version)) -ForegroundColor Green"
 
-if "%DO_UPDATE%"=="1" (
-    pushd "%TARGET%"
-    git pull
-    if %errorlevel% neq 0 (
-        powershell -NoProfile -Command "Write-Host 'git pull failed. Check your internet or folder permissions.' -ForegroundColor Red"
-        popd
-        goto END
-    )
+:: Perform clone or pull
+powershell -NoProfile -Command "Write-Host ''; Write-Host '>>> STEP 2: Acquiring latest dictionary...' -ForegroundColor Cyan"
+
+if "%MODE%"=="update" (
+  pushd "%TARGET%"
+  git pull --ff-only
+  if errorlevel 1 (
+    powershell -NoProfile -Command "Write-Host 'Pull failed.' -ForegroundColor Red"
     popd
-    set SUCCESS_MSG=UPDATED in place
+    goto :fail
+  )
+  popd
+  set "ACTION=UPDATED via git pull"
 ) else (
-    if exist "%TARGET%" rmdir /s /q "%TARGET%" >nul 2>&1
-    git clone https://github.com/debug-cli/proxydictionairy.git "%TARGET%"
-    if %errorlevel% neq 0 (
-        powershell -NoProfile -Command "Write-Host 'Clone failed. Check internet connection and that the repo is public.' -ForegroundColor Red"
-        goto END
-    )
-    set SUCCESS_MSG=CLONED
+  if exist "%TARGET%" rd /s /q "%TARGET%" >nul 2>&1
+  git clone --depth 1 https://github.com/debug-cli/proxydictionairy.git "%TARGET%"
+  if errorlevel 1 goto :fail
+  set "ACTION=CLONED"
 )
 
-:: --- Success dazzle --------------------------------------------------------
+:: Big success banner + reminder (colored, PS compatible)
 powershell -NoProfile -Command ^
-    "Write-Host '';^
-     Write-Host '===========================================================' -ForegroundColor Green;^
-     Write-Host '   SUCCESS - proxydictionairy %SUCCESS_MSG%                 ' -ForegroundColor Black -BackgroundColor Green;^
-     Write-Host '===========================================================' -ForegroundColor Green;^
-     Write-Host '';^
-     Write-Host 'Location: %TARGET%' -ForegroundColor White;^
-     Write-Host '';^
-     Write-Host 'HOW TO OPEN THE DICTIONARY:' -ForegroundColor Cyan;^
-     Write-Host '  1. Open File Explorer' -ForegroundColor White;^
-     Write-Host '  2. Go to %TARGET%' -ForegroundColor White;^
-     Write-Host '  3. Double-click index.html   (or proxydictionary.html)' -ForegroundColor White;^
-     Write-Host '';^
-     Write-Host '-----------------------------------------------------------' -ForegroundColor DarkGray;^
-     Write-Host '  IMPORTANT - KEEP IT FRESH (git pull)' -ForegroundColor Yellow -BackgroundColor Black;^
-     Write-Host '  The list of proxies changes. To get the latest mirrors:' -ForegroundColor Yellow;^
-     Write-Host '';^
-     Write-Host '    cd %TARGET%' -ForegroundColor White;^
-     Write-Host '    git pull' -ForegroundColor White;^
-     Write-Host '    (then hard-refresh the html page with Ctrl+F5)' -ForegroundColor White;^
-     Write-Host '';^
-     Write-Host '  Run the above any time you want updated endpoints.' -ForegroundColor Yellow;^
-     Write-Host '-----------------------------------------------------------' -ForegroundColor DarkGray;^
-     Write-Host '';^
-     Write-Host 'You can also visit the live hosted version at:' -ForegroundColor Cyan;^
-     Write-Host 'https://proxydict.vercel.app' -ForegroundColor Magenta;^
-     Write-Host '';^
-     Write-Host 'Thank you. Now go break some filters (responsibly).' -ForegroundColor Green;^
-     Write-Host ''"
+"Write-Host ''; ^
+Write-Host ('='*60) -ForegroundColor Green; ^
+Write-Host '   SUCCESS! proxydictionairy %ACTION%' -ForegroundColor Black -BackgroundColor Green; ^
+Write-Host ('='*60) -ForegroundColor Green; ^
+Write-Host ''; ^
+Write-Host '  Installed to: %TARGET%' -ForegroundColor White; ^
+Write-Host ''; ^
+Write-Host '  TO OPEN:' -ForegroundColor Cyan; ^
+Write-Host '    Open File Explorer -> navigate to the folder above' -ForegroundColor White; ^
+Write-Host '    Double click:  index.html' -ForegroundColor White; ^
+Write-Host '    (proxydictionary.html also works)' -ForegroundColor DarkGray; ^
+Write-Host ''; ^
+Write-Host ('-'*60) -ForegroundColor Yellow; ^
+Write-Host '  *** UPDATE REMINDER (do this often) ***' -ForegroundColor Yellow -BackgroundColor DarkRed; ^
+Write-Host '  Open PowerShell or CMD and run:' -ForegroundColor Yellow; ^
+Write-Host ''; ^
+Write-Host '    cd %TARGET%' -ForegroundColor White; ^
+Write-Host '    git pull' -ForegroundColor White; ^
+Write-Host '    (then reload the .html page - Ctrl + Shift + R)' -ForegroundColor White; ^
+Write-Host ''; ^
+Write-Host '  This pulls the newest proxy mirrors into your local copy.' -ForegroundColor Yellow; ^
+Write-Host ('-'*60) -ForegroundColor Yellow; ^
+Write-Host ''; ^
+Write-Host '  Live version (always fresh): https://proxydict.vercel.app' -ForegroundColor Magenta; ^
+Write-Host ''; ^
+Write-Host 'All done. Enjoy the dictionary.' -ForegroundColor Green; ^
+Write-Host ''"
 
-:END
-powershell -NoProfile -Command "Write-Host 'Press any key to close this window...' -ForegroundColor DarkGray"
+goto :end
+
+:fail
+powershell -NoProfile -Command "Write-Host 'Something went wrong. See messages above.' -ForegroundColor Red"
+
+:end
+powershell -NoProfile -Command "Write-Host ''; Write-Host 'Press any key to exit...' -ForegroundColor DarkGray"
 pause >nul
 exit /b 0
