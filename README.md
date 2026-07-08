@@ -50,6 +50,10 @@ Restart your terminal after installing curl.
 
 ### Bootstrap using curl (Recommended)
 
+**This tool is mainly recommended for USB drives.**  
+It lets you put a full offline copy of the Proxy Dictionary on a portable USB stick that you can take anywhere.  
+**No data will ever be wiped or deleted** — it only adds a new folder.
+
 **Important note before running:**
 
 This downloads and runs a script from the internet. The command might look suspicious to you or to your antivirus software. This project is completely open source — you are encouraged to paste the URL into VirusTotal.com first to check it, and to read the code yourself.
@@ -76,21 +80,33 @@ cd $env:TEMP; curl -L -o install.bat https://raw.githubusercontent.com/debug-cli
 
 The script will:
 
-- Ask which drive letter to place `proxydictionary\` on (C, D, E, ...)
+- Ask which drive letter to place `proxydictionary\` on (mainly for USB drives - C, D, E, ...)
 - Check for git (auto-attempts install via winget if missing)
-- Clone the repo
+- Clone the repo into a **new** folder called `proxydictionary`
 - Give you the exact path to open `index.html`
+
+**This installer is mainly recommended for USB drives.**  
+You can plug in a USB stick, choose its drive letter, and take the full Proxy Dictionary with you anywhere for offline use.  
+**Data will NOT be wiped or deleted from anything.** The script only creates a new folder and never touches your existing files.
 
 After it finishes you will see a big success banner and the **update command reminder** (git pull).
 
-### Manual (git users)
+**Note:** If you are not putting this on a USB drive, it is usually easier to just use the live website (https://proxydict.vercel.app) or manually run git commands in any folder on your computer. No installer needed.
+
+### Manual (git users) — recommended if NOT using a USB
+
+If you are installing to a regular hard drive or SSD (not a USB), it is often simpler to skip the installer entirely and use git directly, or just visit the website.
 
 ```powershell
-# choose your drive
+# choose any convenient folder (example: D:\ or your Documents folder)
 cd D:\
 git clone https://github.com/debug-cli/proxydictionary.git
 cd proxydictionary
 # open index.html or proxydictionary.html in any browser
+```
+
+**Tip:** For non-USB use, the easiest option is usually the live website:  
+https://proxydict.vercel.app
 ```
 
 ## Updating the Dictionary
@@ -139,7 +155,11 @@ A: Right-click the file and choose "Run as administrator" sometimes helps. You c
 A: Run `winget install --id Git.Git -e --source winget` manually (may need admin terminal). Then re-run the installer or just `git clone`.
 
 **Q: Which drive letter should I pick?**  
-A: Any letter that exists on your machine with write access (usually C or D). The script will create `X:\proxydictionary` (where X is the letter you type). Avoid system-reserved letters.
+A: This installer is mainly intended for USB drives. Plug in your USB, note its drive letter (for example D: or E:), and choose that.  
+
+**Safety:** The script will ONLY create a new folder called `proxydictionary`. It will NEVER delete, wipe, or modify any of your existing files or data on the drive.
+
+If you are not using a USB, consider skipping the installer and using the website (https://proxydict.vercel.app) or cloning with git manually to any folder. Git commands are usually simpler in that case.
 
 **Q: Does this work in the old blue-icon Windows PowerShell?**  
 A: Yes. The installer and everything is tested for maximum compatibility with default Windows PowerShell (no fancy fonts or unicode icons required). Colors use basic Write-Host.
