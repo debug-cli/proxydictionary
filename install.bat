@@ -18,12 +18,12 @@ powershell -NoProfile -Command "Write-Host '    - Prompt for a drive letter (C, 
 powershell -NoProfile -Command "Write-Host '    - Auto-install git via winget if missing' -ForegroundColor Yellow"
 powershell -NoProfile -Command "Write-Host '    - Clone to DRIVE:\proxydictionary' -ForegroundColor Yellow; Write-Host ''"
 powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor DarkGray"
-powershell -NoProfile -Command "Write-Host '  SHADY-LOOKING COMMAND DISCLAIMER' -ForegroundColor Red -BackgroundColor Black"
-powershell -NoProfile -Command "Write-Host '  Running a downloaded .bat via curl/iwr can trigger AV.' -ForegroundColor Yellow"
-powershell -NoProfile -Command "Write-Host '  THIS PROJECT IS FULLY OPEN SOURCE AND AUDITABLE.' -ForegroundColor Green"
+powershell -NoProfile -Command "Write-Host '  IMPORTANT NOTE ABOUT THIS SCRIPT' -ForegroundColor Red -BackgroundColor Black"
+powershell -NoProfile -Command "Write-Host '  Running a downloaded batch file might look suspicious to you or your antivirus software.' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '  This project is completely open source. You can review every line of the code.' -ForegroundColor Green"
 powershell -NoProfile -Command "Write-Host '  1. Copy the URL you used to fetch install.bat' -ForegroundColor Yellow"
 powershell -NoProfile -Command "Write-Host '  2. Go to https://www.virustotal.com and scan it' -ForegroundColor Yellow"
-powershell -NoProfile -Command "Write-Host '  3. Read the source in the repo before trusting' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '  3. Read the script in the repository before running it' -ForegroundColor Yellow"
 powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor DarkGray; Write-Host ''"
 
 echo.

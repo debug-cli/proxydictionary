@@ -50,8 +50,9 @@ Restart your terminal after installing curl.
 
 ### Bootstrap using curl (Recommended)
 
-**WARNING: This downloads and runs a script from the internet.**  
-It may look shady to AV. **This is 100% open source** — scan the URL on [VirusTotal](https://www.virustotal.com) first and read the code.
+**Important note before running:**
+
+This downloads and runs a script from the internet. The command might look suspicious to you or to your antivirus software. This project is completely open source — you are encouraged to paste the URL into VirusTotal.com first to check it, and to read the code yourself.
 
 **Step 1 — Download the installer**
 
@@ -65,7 +66,7 @@ curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictiona
 powershell -Command "(Get-Content install.bat -Raw) -replace \"`r?`n\",\"`r`n\" | Set-Content install.bat -Encoding ASCII; cmd /c install.bat"
 ```
 
-This two-step approach avoids complex quoting problems that break one-liners.
+This two-step method is easier to copy and avoids the quoting problems that often break complicated one-line commands.
 
 The script will:
 
@@ -131,11 +132,11 @@ proxydictionary/
 
 ## FAQ
 
-**Q: The install command looks like malware / gets flagged. Is it safe?**  
-A: Yes. One-liner download+exec patterns are common for legitimate bootstrappers (rustup, nvm, etc). The entire project is public. Drop the raw install.bat URL into VirusTotal. Read the script. Nothing phones home except the git clone you explicitly trigger.
+**Q: The install command looks suspicious or gets blocked by my antivirus. Is it safe?**  
+A: Yes. Commands that download and run files are common for legitimate tools (like installing Git or other software). This entire project is public and open source. You can paste the raw install.bat URL into VirusTotal.com to scan it yourself, and read the script. Nothing connects to any server except when you run the git clone command.
 
-**Q: My antivirus / Defender blocks the .bat or the download.**  
-A: Right-click → Run as administrator sometimes helps, or temporarily disable real-time protection for the download folder. You can also manually `git clone` (see above) — no script required.
+**Q: My antivirus software or Windows Defender blocks the batch file or the download.**  
+A: Right-click the file and choose "Run as administrator" sometimes helps. You can also temporarily pause real-time protection for the download folder. As an alternative, you can manually clone the repository with git (see the instructions above) — no script is required.
 
 **Q: What if git is not installed and winget fails?**  
 A: Run `winget install --id Git.Git -e --source winget` manually (may need admin terminal). Then re-run the installer or just `git clone`.
