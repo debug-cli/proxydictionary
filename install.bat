@@ -14,7 +14,7 @@ Write-Host ('='*60) -ForegroundColor Cyan; ^
 Write-Host '  PROXYDICTIONARY  -  PROXY DICTIONARY  BOOTSTRAP' -ForegroundColor White -BackgroundColor DarkBlue; ^
 Write-Host ('='*60) -ForegroundColor Cyan; ^
 Write-Host ''; ^
-Write-Host '  Monolithic client-side proxy index (4100+ mirrors)' -ForegroundColor Green; ^
+Write-Host '  Monolithic client-side proxy index (5k+ mirrors)' -ForegroundColor Green; ^
 Write-Host '  Zero deps | localStorage favs | one-click copy | git-updatable' -ForegroundColor Green; ^
 Write-Host ''; ^
 Write-Host '  This .bat will:' -ForegroundColor Yellow; ^

@@ -1,7 +1,7 @@
 # proxydictionary
 
 > **A monolithic client-side proxy reconnaissance and dispatch console.**  
-> Zero external dependencies. In-browser category index. localStorage-backed operator pinning. One-click URL exfil to clipboard. Air-gapped safe. 4100+ verified mirrors.
+> Zero external dependencies. In-browser category index. localStorage-backed operator pinning. One-click URL exfil to clipboard. Air-gapped safe. 5k+ mirrors.
 
 A hardened, single-file HTML payload that aggregates and indexes thousands of proxy / web-unblocker endpoints. Designed for rapid recon in filtered or high-containment environments. Pull updates, open the file, go.
 
