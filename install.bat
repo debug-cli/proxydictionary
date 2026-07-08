@@ -43,16 +43,15 @@ if errorlevel 2 (
 
 :: Drive letter prompt with validation + examples
 :DRIVE_PROMPT
-powershell -NoProfile -Command ^
-"Write-Host ''; ^
- Write-Host '>>> STEP 1: Choose installation drive' -ForegroundColor Cyan -BackgroundColor Black; ^
- Write-Host '    Type ONLY the letter and press ENTER' -ForegroundColor Gray; ^
- Write-Host ''; ^
- Write-Host '    EXAMPLES:' -ForegroundColor White; ^
- Write-Host '      D     -> will use D:\proxydictionary' -ForegroundColor DarkGray; ^
- Write-Host '      C     -> will use C:\proxydictionary (works too)' -ForegroundColor DarkGray; ^
- Write-Host '      E     -> E:\proxydictionary' -ForegroundColor DarkGray; ^
- Write-Host ''"
+powershell -NoProfile -Command "Write-Host ''"
+powershell -NoProfile -Command "Write-Host '>>> STEP 1: Choose installation drive' -ForegroundColor Cyan -BackgroundColor Black"
+powershell -NoProfile -Command "Write-Host '    Type ONLY the letter and press ENTER' -ForegroundColor Gray"
+powershell -NoProfile -Command "Write-Host ''"
+powershell -NoProfile -Command "Write-Host '    EXAMPLES:' -ForegroundColor White"
+powershell -NoProfile -Command "Write-Host '      D     to use D:\proxydictionary' -ForegroundColor DarkGray"
+powershell -NoProfile -Command "Write-Host '      C     to use C:\proxydictionary (works too)' -ForegroundColor DarkGray"
+powershell -NoProfile -Command "Write-Host '      E     to use E:\proxydictionary' -ForegroundColor DarkGray"
+powershell -NoProfile -Command "Write-Host ''"
 
 set /p "DRIVE=Drive letter [A-Z]: "
 set DRIVE=%DRIVE:~0,1%
@@ -125,7 +124,7 @@ powershell -NoProfile -Command "Write-Host '   SUCCESS! proxydictionary %ACTION%
 powershell -NoProfile -Command "Write-Host ('='*60) -ForegroundColor Green; Write-Host ''"
 powershell -NoProfile -Command "Write-Host '  Installed to: %TARGET%' -ForegroundColor White; Write-Host ''"
 powershell -NoProfile -Command "Write-Host '  TO OPEN:' -ForegroundColor Cyan"
-powershell -NoProfile -Command "Write-Host '    Open File Explorer -> navigate to the folder above' -ForegroundColor White"
+powershell -NoProfile -Command "Write-Host '    Open File Explorer to navigate to the folder above' -ForegroundColor White"
 powershell -NoProfile -Command "Write-Host '    Double click:  index.html' -ForegroundColor White"
 powershell -NoProfile -Command "Write-Host '    (proxydictionary.html also works)' -ForegroundColor DarkGray; Write-Host ''"
 powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor Yellow"
