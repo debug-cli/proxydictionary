@@ -14,7 +14,6 @@ desktop.ini
 
 # Vercel build / deploy artifacts
 .vercel/
-.vercel
 
 # Node / package managers (if ever added)
 node_modules/
@@ -35,3 +34,5 @@ install.bat.bak
 # Misc
 *.zip
 *.tar.gz
+
+.vercel
