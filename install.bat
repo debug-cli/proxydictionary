@@ -7,30 +7,24 @@ setlocal EnableDelayedExpansion
 
 title proxydictionary Installer
 
-powershell -NoProfile -Command ^
-"$esc = [char]27; ^
-Write-Host ''; ^
-Write-Host ('='*60) -ForegroundColor Cyan; ^
-Write-Host '  PROXYDICTIONARY  -  PROXY DICTIONARY  BOOTSTRAP' -ForegroundColor White -BackgroundColor DarkBlue; ^
-Write-Host ('='*60) -ForegroundColor Cyan; ^
-Write-Host ''; ^
-Write-Host '  Monolithic client-side proxy index (5k+ mirrors)' -ForegroundColor Green; ^
-Write-Host '  Zero deps | localStorage favs | one-click copy | git-updatable' -ForegroundColor Green; ^
-Write-Host ''; ^
-Write-Host '  This .bat will:' -ForegroundColor Yellow; ^
-Write-Host '    - Prompt for a drive letter (C, D, E...)' -ForegroundColor Yellow; ^
-Write-Host '    - Auto-install git via winget if missing' -ForegroundColor Yellow; ^
-Write-Host '    - Clone to DRIVE:\proxydictionary' -ForegroundColor Yellow; ^
-Write-Host ''; ^
-Write-Host ('-'*60) -ForegroundColor DarkGray; ^
-Write-Host '  SHADY-LOOKING COMMAND DISCLAIMER' -ForegroundColor Red -BackgroundColor Black; ^
-Write-Host '  Running a downloaded .bat via curl/iwr can trigger AV.' -ForegroundColor Yellow; ^
-Write-Host '  THIS PROJECT IS FULLY OPEN SOURCE AND AUDITABLE.' -ForegroundColor Green; ^
-Write-Host '  1. Copy the URL you used to fetch install.bat' -ForegroundColor Yellow; ^
-Write-Host '  2. Go to https://www.virustotal.com and scan it' -ForegroundColor Yellow; ^
-Write-Host '  3. Read the source in the repo before trusting' -ForegroundColor Yellow; ^
-Write-Host ('-'*60) -ForegroundColor DarkGray; ^
-Write-Host ''"
+:: Header - split into multiple calls for robustness (LF vs CRLF from downloads)
+powershell -NoProfile -Command "Write-Host ''; Write-Host ('='*60) -ForegroundColor Cyan"
+powershell -NoProfile -Command "Write-Host '  PROXYDICTIONARY  -  PROXY DICTIONARY  BOOTSTRAP' -ForegroundColor White -BackgroundColor DarkBlue"
+powershell -NoProfile -Command "Write-Host ('='*60) -ForegroundColor Cyan; Write-Host ''"
+powershell -NoProfile -Command "Write-Host '  Monolithic client-side proxy index (5k+ mirrors)' -ForegroundColor Green"
+powershell -NoProfile -Command "Write-Host '  Zero deps | localStorage favs | one-click copy | git-updatable' -ForegroundColor Green"
+powershell -NoProfile -Command "Write-Host ''; Write-Host '  This .bat will:' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '    - Prompt for a drive letter (C, D, E...)' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '    - Auto-install git via winget if missing' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '    - Clone to DRIVE:\proxydictionary' -ForegroundColor Yellow; Write-Host ''"
+powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor DarkGray"
+powershell -NoProfile -Command "Write-Host '  SHADY-LOOKING COMMAND DISCLAIMER' -ForegroundColor Red -BackgroundColor Black"
+powershell -NoProfile -Command "Write-Host '  Running a downloaded .bat via curl/iwr can trigger AV.' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '  THIS PROJECT IS FULLY OPEN SOURCE AND AUDITABLE.' -ForegroundColor Green"
+powershell -NoProfile -Command "Write-Host '  1. Copy the URL you used to fetch install.bat' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '  2. Go to https://www.virustotal.com and scan it' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '  3. Read the source in the repo before trusting' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor DarkGray; Write-Host ''"
 
 echo.
 choice /C YN /M "Continue with installation? (Y=Yes, N=Abort)"
@@ -117,35 +111,25 @@ if "%MODE%"=="update" (
   set "ACTION=CLONED"
 )
 
-:: Big success banner + reminder (colored, PS compatible)
-powershell -NoProfile -Command ^
-"Write-Host ''; ^
-Write-Host ('='*60) -ForegroundColor Green; ^
-Write-Host '   SUCCESS! proxydictionary %ACTION%' -ForegroundColor Black -BackgroundColor Green; ^
-Write-Host ('='*60) -ForegroundColor Green; ^
-Write-Host ''; ^
-Write-Host '  Installed to: %TARGET%' -ForegroundColor White; ^
-Write-Host ''; ^
-Write-Host '  TO OPEN:' -ForegroundColor Cyan; ^
-Write-Host '    Open File Explorer -> navigate to the folder above' -ForegroundColor White; ^
-Write-Host '    Double click:  index.html' -ForegroundColor White; ^
-Write-Host '    (proxydictionary.html also works)' -ForegroundColor DarkGray; ^
-Write-Host ''; ^
-Write-Host ('-'*60) -ForegroundColor Yellow; ^
-Write-Host '  *** UPDATE REMINDER (do this often) ***' -ForegroundColor Yellow -BackgroundColor DarkRed; ^
-Write-Host '  Open PowerShell or CMD and run:' -ForegroundColor Yellow; ^
-Write-Host ''; ^
-Write-Host '    cd %TARGET%' -ForegroundColor White; ^
-Write-Host '    git pull' -ForegroundColor White; ^
-Write-Host '    (then reload the .html page - Ctrl + Shift + R)' -ForegroundColor White; ^
-Write-Host ''; ^
-Write-Host '  This pulls the newest proxy mirrors into your local copy.' -ForegroundColor Yellow; ^
-Write-Host ('-'*60) -ForegroundColor Yellow; ^
-Write-Host ''; ^
-Write-Host '  Live version (always fresh): https://proxydict.vercel.app' -ForegroundColor Magenta; ^
-Write-Host ''; ^
-Write-Host 'All done. Enjoy the dictionary.' -ForegroundColor Green; ^
-Write-Host ''"
+:: Big success banner + reminder (split for download robustness)
+powershell -NoProfile -Command "Write-Host ''; Write-Host ('='*60) -ForegroundColor Green"
+powershell -NoProfile -Command "Write-Host '   SUCCESS! proxydictionary %ACTION%' -ForegroundColor Black -BackgroundColor Green"
+powershell -NoProfile -Command "Write-Host ('='*60) -ForegroundColor Green; Write-Host ''"
+powershell -NoProfile -Command "Write-Host '  Installed to: %TARGET%' -ForegroundColor White; Write-Host ''"
+powershell -NoProfile -Command "Write-Host '  TO OPEN:' -ForegroundColor Cyan"
+powershell -NoProfile -Command "Write-Host '    Open File Explorer -> navigate to the folder above' -ForegroundColor White"
+powershell -NoProfile -Command "Write-Host '    Double click:  index.html' -ForegroundColor White"
+powershell -NoProfile -Command "Write-Host '    (proxydictionary.html also works)' -ForegroundColor DarkGray; Write-Host ''"
+powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '  *** UPDATE REMINDER (do this often) ***' -ForegroundColor Yellow -BackgroundColor DarkRed"
+powershell -NoProfile -Command "Write-Host '  Open PowerShell or CMD and run:' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host ''; Write-Host '    cd %TARGET%' -ForegroundColor White"
+powershell -NoProfile -Command "Write-Host '    git pull' -ForegroundColor White"
+powershell -NoProfile -Command "Write-Host '    (then reload the .html page - Ctrl + Shift + R)' -ForegroundColor White; Write-Host ''"
+powershell -NoProfile -Command "Write-Host '  This pulls the newest proxy mirrors into your local copy.' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor Yellow; Write-Host ''"
+powershell -NoProfile -Command "Write-Host '  Live version (always fresh): https://proxydict.vercel.app' -ForegroundColor Magenta"
+powershell -NoProfile -Command "Write-Host ''; Write-Host 'All done. Enjoy the dictionary.' -ForegroundColor Green; Write-Host ''"
 
 goto :end
 
