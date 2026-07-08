@@ -31,13 +31,13 @@ It may look shady to AV / corporate policy engines. **It is 100% open source.** 
 **Powershell (works in classic blue Powershell and PS7):**
 
 ```powershell
-powershell -Command "iwr -UseBasicParsing -Uri 'https://raw.githubusercontent.com/debug-cli/proxydictionary/main/install.bat' -OutFile 'install.bat'; .\install.bat"
+powershell -Command "iwr -UseBasicParsing -Uri 'https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat' -OutFile 'install.bat'; .\install.bat"
 ```
 
 **CMD / curl (if available):**
 
 ```cmd
-curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/main/install.bat && install.bat
+curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat && install.bat
 ```
 
 The script will:
