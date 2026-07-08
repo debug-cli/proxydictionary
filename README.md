@@ -54,19 +54,25 @@ Restart your terminal after installing curl.
 
 This downloads and runs a script from the internet. The command might look suspicious to you or to your antivirus software. This project is completely open source — you are encouraged to paste the URL into VirusTotal.com first to check it, and to read the code yourself.
 
-**Step 1 — Download the installer**
+**Simple test commands (the installer now fixes line endings automatically):**
+
+Download:
 
 ```cmd
 curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat
 ```
 
-**Step 2 — Fix line endings + run (paste in PowerShell or CMD)**
+Run:
 
-```powershell
-powershell -Command "(Get-Content install.bat -Raw) -replace \"`r?`n\",\"`r`n\" | Set-Content install.bat -Encoding ASCII; cmd /c install.bat"
+```cmd
+install.bat
 ```
 
-This two-step method is easier to copy and avoids the quoting problems that often break complicated one-line commands.
+Or as one combined command:
+
+```powershell
+cd $env:TEMP; curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat; .\install.bat
+```
 
 The script will:
 

@@ -1,6 +1,14 @@
 @echo off
 setlocal EnableDelayedExpansion
 
+:: Self-repair line endings if the file was downloaded via curl/iwr (GitHub raw uses LF)
+for /f "delims=" %%a in ('powershell -NoProfile -Command "if ((Get-Content '%~f0' -Raw) -match '[^\r]\n') { (Get-Content '%~f0' -Raw) -replace \"`r?`n\",\"`r`n\" | Set-Content '%~f0' -Encoding ASCII; echo fixed } else { echo ok }"') do (
+  if "%%a"=="fixed" (
+    cmd /c "%~f0"
+    exit /b
+  )
+)
+
 :: proxydictionary Windows bootstrap installer
 :: Flashy but 100% compatible with stock blue Windows PowerShell + CMD
 :: Asks drive letter, ensures git, clones so you can git pull later.
