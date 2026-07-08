@@ -1,0 +1,37 @@
+# OS / system files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.tmp
+*.swp
+*.log
+
+# Editor / IDE
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Vercel build / deploy artifacts
+.vercel/
+.vercel
+
+# Node / package managers (if ever added)
+node_modules/
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# Windows specific build / backup
+*.bak
+install.bat.bak
+
+# Environment / secrets (prevent accidental commit)
+.env
+.env.local
+*.pem
+*.key
+
+# Misc
+*.zip
+*.tar.gz

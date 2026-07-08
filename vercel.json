@@ -1,0 +1,14 @@
+{
+  "version": 2,
+  "framework": null,
+  "buildCommand": "",
+  "devCommand": "",
+  "outputDirectory": ".",
+  "public": true,
+  "github": {
+    "silent": true
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/index.html" }
+  ]
+}
