@@ -80,13 +80,14 @@ cd $env:TEMP; curl -L -o install.bat https://raw.githubusercontent.com/debug-cli
 
 The script will:
 
-- Ask which drive letter to place `proxydictionary\` on (mainly for USB drives - C, D, E, ...)
+- Show a simple numbered menu to select any drive (mainly for USB drives)
+- List the Windows system drive first, then any plugged-in drives with details (free space, type)
 - Check for git (auto-attempts install via winget if missing)
 - Clone the repo into a **new** folder called `proxydictionary`
 - Give you the exact path to open `index.html`
 
 **This installer is mainly recommended for USB drives.**  
-You can plug in a USB stick, choose its drive letter, and take the full Proxy Dictionary with you anywhere for offline use.  
+You can plug in a USB stick, use the numbered menu to select it, and take the full Proxy Dictionary with you anywhere for offline use.  
 **Data will NOT be wiped or deleted from anything.** The script only creates a new folder and never touches your existing files.
 
 After it finishes you will see a big success banner and the **update command reminder** (git pull).
@@ -95,7 +96,7 @@ After it finishes you will see a big success banner and the **update command rem
 
 ### Manual (git users) — recommended if NOT using a USB
 
-If you are installing to a regular hard drive or SSD (not a USB), it is often simpler to skip the installer entirely and use git directly, or just visit the website.
+If you are installing to a regular hard drive or SSD (not a USB), it is often simpler to skip the installer entirely and use git directly, or just visit the website (no drive selection menu needed).
 
 ```powershell
 # choose any convenient folder (example: D:\ or your Documents folder)
@@ -154,12 +155,18 @@ A: Right-click the file and choose "Run as administrator" sometimes helps. You c
 **Q: What if git is not installed and winget fails?**  
 A: Run `winget install --id Git.Git -e --source winget` manually (may need admin terminal). Then re-run the installer or just `git clone`.
 
-**Q: Which drive letter should I pick?**  
-A: This installer is mainly intended for USB drives. Plug in your USB, note its drive letter (for example D: or E:), and choose that.  
+**Q: How do I select a drive?**  
+A: The installer shows a simple numbered menu. It automatically lists:
+- Your Windows system drive (C:\ or D:\ etc.)
+- Any plugged-in drives (with free space and type)
 
-**Safety:** The script will ONLY create a new folder called `proxydictionary`. It will NEVER delete, wipe, or modify any of your existing files or data on the drive.
+Just type the number and press Enter. No manual drive letter typing.
 
-If you are not using a USB, consider skipping the installer and using the website (https://proxydict.vercel.app) or cloning with git manually to any folder. Git commands are usually simpler in that case.
+It is mainly for USBs. 
+
+**Safety:** It will ONLY create a new folder called `proxydictionary`. It will NEVER delete, wipe, or modify any existing files or data.
+
+If you are not using a USB, you can skip the installer and just use the website (https://proxydict.vercel.app) or clone with git manually.
 
 **Q: Does this work in the old blue-icon Windows PowerShell?**  
 A: Yes. The installer and everything is tested for maximum compatibility with default Windows PowerShell (no fancy fonts or unicode icons required). Colors use basic Write-Host.

@@ -11,7 +11,7 @@ for /f "delims=" %%a in ('powershell -NoProfile -Command "if ((Get-Content '%~f0
 
 :: proxydictionary Windows bootstrap installer
 :: Flashy but 100% compatible with stock blue Windows PowerShell + CMD
-:: Asks drive letter, ensures git, clones so you can git pull later.
+:: Selects drive with arrow keys (no manual typing), ensures git, clones so you can git pull later.
 
 title proxydictionary Installer
 
@@ -22,9 +22,9 @@ powershell -NoProfile -Command "Write-Host ('='*60) -ForegroundColor Cyan; Write
 powershell -NoProfile -Command "Write-Host '  Monolithic client-side proxy index (5k+ mirrors)' -ForegroundColor Green"
 powershell -NoProfile -Command "Write-Host '  Zero deps | localStorage favs | one-click copy | git-updatable' -ForegroundColor Green"
 powershell -NoProfile -Command "Write-Host ''; Write-Host '  This .bat will:' -ForegroundColor Yellow"
-powershell -NoProfile -Command "Write-Host '    - Prompt for a drive letter (mainly for USB drives - C, D, E...)' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '    - Show a simple numbered menu to select any drive (mainly for USBs)' -ForegroundColor Yellow"
 powershell -NoProfile -Command "Write-Host '    - Auto-install git via winget if missing' -ForegroundColor Yellow"
-powershell -NoProfile -Command "Write-Host '    - Clone the files into a new proxydictionary folder on that drive' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '    - Clone the files into a new proxydictionary folder on the chosen drive' -ForegroundColor Yellow"
 powershell -NoProfile -Command "Write-Host ''; Write-Host '  IMPORTANT:' -ForegroundColor Cyan"
 powershell -NoProfile -Command "Write-Host '    This is mainly recommended for USB drives so you can carry' -ForegroundColor White"
 powershell -NoProfile -Command "Write-Host '    the Proxy Dictionary with you on a portable USB stick.' -ForegroundColor White"
@@ -50,36 +50,52 @@ goto :eof
 
 :continue_install
 
-:: Drive letter prompt with validation + examples
-:DRIVE_PROMPT
+:: Drive selection using arrow-key menu (no manual letter typing)
+:: Lists system drive first, then plugged-in drives
 powershell -NoProfile -Command "Write-Host ''"
-powershell -NoProfile -Command "Write-Host '>>> STEP 1: Choose installation drive (best for USBs)' -ForegroundColor Cyan -BackgroundColor Black"
-powershell -NoProfile -Command "Write-Host '    Type ONLY the letter and press ENTER' -ForegroundColor Gray"
-powershell -NoProfile -Command "Write-Host ''"
-powershell -NoProfile -Command "Write-Host '    This is mainly for USB drives so you can take the dictionary anywhere.' -ForegroundColor White"
-powershell -NoProfile -Command "Write-Host '    SAFETY: This will NOT wipe or delete ANY data. Only a new folder is created.' -ForegroundColor Green"
-powershell -NoProfile -Command "Write-Host ''"
-powershell -NoProfile -Command "Write-Host '    EXAMPLES:' -ForegroundColor White"
-powershell -NoProfile -Command "Write-Host '      D     to use D:\proxydictionary' -ForegroundColor DarkGray"
-powershell -NoProfile -Command "Write-Host '      C     to use C:\proxydictionary (works too)' -ForegroundColor DarkGray"
-powershell -NoProfile -Command "Write-Host '      E     to use E:\proxydictionary' -ForegroundColor DarkGray"
-powershell -NoProfile -Command "Write-Host ''"
-powershell -NoProfile -Command "Write-Host '    (Not using a USB? Just visit https://proxydict.vercel.app instead, or git clone anywhere.)' -ForegroundColor Yellow"
+powershell -NoProfile -Command "Write-Host '>>> STEP 1: Select drive for proxydictionary' -ForegroundColor Cyan -BackgroundColor Black"
+powershell -NoProfile -Command "Write-Host '    Enter the number and press Enter. Mainly for USBs.' -ForegroundColor Gray"
+powershell -NoProfile -Command "Write-Host '    SAFETY: This will NOT wipe or delete ANY existing data or files.' -ForegroundColor Green"
 powershell -NoProfile -Command "Write-Host ''"
 
-set /p "DRIVE=Drive letter [A-Z]: "
-set DRIVE=%DRIVE:~0,1%
+for /f "delims=" %%D in ('powershell -NoProfile -ExecutionPolicy Bypass -Command "
+$sys = $env:SystemDrive
+$list = @()
+$list += [pscustomobject]@{Letter=$sys.TrimEnd(':'); Display=\"$sys (Windows is installed here)\"}
 
-if not defined DRIVE goto :invalid_drive
-for %%L in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
-  if /I "%DRIVE%"=="%%L" goto :valid_drive
+$rem = Get-WmiObject Win32_LogicalDisk -Filter \"DriveType=2\" | Sort-Object DeviceID
+foreach ($r in $rem) {
+    $free = if ($r.Size) { [math]::Round($r.FreeSpace/1GB,1) } else { \"?\" }
+    $vol = if ($r.VolumeName) { \" - $($r.VolumeName)\" } else { \"\" }
+    $list += [pscustomobject]@{Letter=$r.DeviceID.TrimEnd(':'); Display=\"$($r.DeviceID)$vol (USB/Removable, $free GB free)\"}
+}
+
+$fixed = Get-WmiObject Win32_LogicalDisk -Filter \"DriveType=3 AND DeviceID != '$sys'\" | Sort-Object DeviceID
+foreach ($f in $fixed) {
+    $free = if ($f.Size) { [math]::Round($f.FreeSpace/1GB,1) } else { \"?\" }
+    $vol = if ($f.VolumeName) { \" - $($f.VolumeName)\" } else { \"\" }
+    $list += [pscustomobject]@{Letter=$f.DeviceID.TrimEnd(':'); Display=\"$($f.DeviceID)$vol (Fixed, $free GB free)\"}
+}
+
+if ($list.Count -eq 0) { Write-Error \"No drives found\"; exit 1 }
+
+Write-Host \"Available drives:\"
+for ($i=0; $i -lt $list.Count; $i++) {
+    Write-Host \"  $($i+1)) $($list[$i].Display)\"
+}
+Write-Host \"\"
+$sel = Read-Host \"Enter number\"
+$num = [int]$sel
+if ($num -lt 1 -or $num -gt $list.Count) { Write-Error \"Invalid selection\"; exit 1 }
+Write-Output $list[$num-1].Letter
+" ') do (
+    set "DRIVE=%%D"
 )
 
-:invalid_drive
-powershell -NoProfile -Command "Write-Host 'Invalid drive letter. Must be A-Z.' -ForegroundColor Red"
-goto DRIVE_PROMPT
-
-:valid_drive
+if not defined DRIVE (
+    powershell -NoProfile -Command "Write-Host 'No drive selected.' -ForegroundColor Red"
+    goto :eof
+)
 
 set "TARGET=%DRIVE%:\proxydictionary"
 
