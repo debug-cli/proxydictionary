@@ -4,7 +4,6 @@
   "buildCommand": "",
   "devCommand": "",
   "outputDirectory": ".",
-  "public": true,
   "github": {
     "silent": true
   },
