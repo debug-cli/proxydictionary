@@ -1,15 +1,23 @@
-# proxydictionary
+_Welcome to the home of..._
+
+```
+                                ___     __ 
+   ___  _______ __ ____ __  ___/ (_)___/ /_
+  / _ \/ __/ _ \\ \ / // / / _  / / __/ __/
+ / .__/_/  \___/_\_\\_, /  \_,_/_/\__/\__/ 
+/_/                /___/                   
+```
 
 > **A monolithic client-side proxy reconnaissance and dispatch console.**  
 > Zero external dependencies. In-browser category index. localStorage-backed operator pinning. One-click URL exfil to clipboard. Air-gapped safe. 5k+ mirrors.
 
-A hardened, single-file HTML payload that aggregates and indexes thousands of proxy / web-unblocker endpoints. Designed for rapid recon in filtered or high-containment environments. Pull updates, open the file, go.
+A hardened, single-file HTML payload that aggregates and indexes thousands of proxy / web-unblocker endpoints. Designed for rapid recon in filtered or high-containment environments. Pull updates, or deploy locally to any static host.
 
 **Live mirror:** https://proxydict.vercel.app  (deployed via Vercel — the canonical up-to-date view of the dictionary)
 
 ## Why This Exists
 
-Most proxy lists rot, get blocked, or live behind yet another gate. This drops a complete, self-contained index straight into your browser. No servers. No tracking. No build step. Just a single document you can `file://` or host anywhere.
+Most proxy lists rot, get blocked, or live behind yet another gate. This drops a complete, self-contained index straight into your browser. No servers. No tracking. No build step. Just a single do[...]
 
 - Sidebar-driven category navigation with live filter
 - ★ "Saved" categories (pinned for repeat ops) persisted via localStorage + export/import JSON
@@ -56,7 +64,7 @@ It lets you put a full offline copy of the Proxy Dictionary on a portable USB st
 
 **Important note before running:**
 
-This downloads and runs a script from the internet. The command might look suspicious to you or to your antivirus software. This project is completely open source — you are encouraged to paste the URL into VirusTotal.com first to check it, and to read the code yourself.
+This downloads and runs a script from the internet. The command might look suspicious to you or to your antivirus software. This project is completely open source — you are encouraged to paste t[...]
 
 **Simple test commands (the installer now fixes line endings automatically):**
 
@@ -92,11 +100,11 @@ You can plug in a USB stick, use the numbered menu to select it, and take the fu
 
 After it finishes you will see a big success banner and the **update command reminder** (git pull).
 
-**Note:** If you are not putting this on a USB drive, it is usually easier to just use the live website (https://proxydict.vercel.app) or manually run git commands in any folder on your computer. No installer needed.
+**Note:** If you are not putting this on a USB drive, it is usually easier to just use the live website (https://proxydict.vercel.app) or manually run git commands in any folder on your computer. [...]
 
 ### Manual (git users) — recommended if NOT using a USB
 
-If you are installing to a regular hard drive or SSD (not a USB), it is often simpler to skip the installer entirely and use git directly, or just visit the website (no drive selection menu needed).
+If you are installing to a regular hard drive or SSD (not a USB), it is often simpler to skip the installer entirely and use git directly, or just visit the website (no drive selection menu needed[...]
 
 ```powershell
 # choose any convenient folder (example: D:\ or your Documents folder)
@@ -147,10 +155,10 @@ proxydictionary/
 ## FAQ
 
 **Q: The install command looks suspicious or gets blocked by my antivirus. Is it safe?**  
-A: Yes. Commands that download and run files are common for legitimate tools (like installing Git or other software). This entire project is public and open source. You can paste the raw install.bat URL into VirusTotal.com to scan it yourself, and read the script. Nothing connects to any server except when you run the git clone command.
+A: Yes. Commands that download and run files are common for legitimate tools (like installing Git or other software). This entire project is public and open source. You can paste the raw install.[...]
 
 **Q: My antivirus software or Windows Defender blocks the batch file or the download.**  
-A: Right-click the file and choose "Run as administrator" sometimes helps. You can also temporarily pause real-time protection for the download folder. As an alternative, you can manually clone the repository with git (see the instructions above) — no script is required.
+A: Right-click the file and choose "Run as administrator" sometimes helps. You can also temporarily pause real-time protection for the download folder. As an alternative, you can manually clone t[...]
 
 **Q: What if git is not installed and winget fails?**  
 A: Run `winget install --id Git.Git -e --source winget` manually (may need admin terminal). Then re-run the installer or just `git clone`.
