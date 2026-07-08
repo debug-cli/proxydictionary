@@ -28,16 +28,24 @@ It may look shady to AV / corporate policy engines. **It is 100% open source.** 
 1. Paste the raw URL into [VirusTotal](https://www.virustotal.com) before running.
 2. Inspect the code yourself (it's a small .bat + this repo).
 
-**Powershell (works in classic blue Powershell and PS7):**
+**PowerShell (recommended - works in classic blue PowerShell and PS7+):**
+
+This version is more reliable (handles line endings from GitHub downloads):
 
 ```powershell
-powershell -Command "iwr -UseBasicParsing -Uri 'https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat' -OutFile 'install.bat'; .\install.bat"
+powershell -Command "
+  $url = 'https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat';
+  $f = 'install.bat';
+  (Invoke-WebRequest -UseBasicParsing -Uri $url).Content -replace \"`r?`n\", \"`r`n\" | Set-Content -Path $f -Encoding ASCII;
+  cmd /c .\$f
+"
 ```
 
-**CMD / curl (if available):**
+**Using curl (then fix + run):**
 
 ```cmd
-curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat && install.bat
+curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat
+powershell -Command "(Get-Content install.bat -Raw) -replace \"`r?`n\",\"`r`n\" | Set-Content install.bat -Encoding ASCII; cmd /c install.bat"
 ```
 
 The script will:
