@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 :: Self-repair line endings if the file was downloaded via curl/iwr (GitHub raw uses LF)
-for /f "delims=" %%a in ('powershell -NoProfile -Command "if ((Get-Content '%~f0' -Raw) -match '[^\r]\n') { (Get-Content '%~f0' -Raw) -replace \"`r?`n\",\"`r`n\" | Set-Content '%~f0' -Encoding ASCII; echo fixed } else { echo ok }"') do (
+for /f "delims=" %%a in ('powershell -NoProfile -Command "if ((Get-Content '%~f0' -Raw) -notmatch '\r\n') { (Get-Content '%~f0' -Raw) -replace \"`n\",\"`r`n\" | Set-Content '%~f0' -Encoding ASCII; echo fixed } else { echo ok }"') do (
   if "%%a"=="fixed" (
     cmd /c "%~f0"
     exit /b
@@ -35,11 +35,12 @@ powershell -NoProfile -Command "Write-Host '  3. Read the script in the reposito
 powershell -NoProfile -Command "Write-Host ('-'*60) -ForegroundColor DarkGray; Write-Host ''"
 
 echo.
-choice /C YN /M "Continue with installation? (Y=Yes, N=Abort)"
-if errorlevel 2 (
-  powershell -NoProfile -Command "Write-Host 'Aborted.' -ForegroundColor Red"
-  goto :eof
-)
+set /p _ans="Continue with installation? (Y/N): "
+if /I "%_ans%"=="Y" goto :continue_install
+powershell -NoProfile -Command "Write-Host 'Aborted.' -ForegroundColor Red"
+goto :eof
+
+:continue_install
 
 :: Drive letter prompt with validation + examples
 :DRIVE_PROMPT
@@ -55,16 +56,17 @@ powershell -NoProfile -Command "Write-Host ''"
 
 set /p "DRIVE=Drive letter [A-Z]: "
 set DRIVE=%DRIVE:~0,1%
-set DRIVE=%DRIVE:~0,1%
 
+if not defined DRIVE goto :invalid_drive
 for %%L in (A B C D E F G H I J K L M N O P Q R S T U V W X Y Z) do (
-  if /I "%DRIVE%"=="%%L" set DRIVE=%%L
+  if /I "%DRIVE%"=="%%L" goto :valid_drive
 )
 
-echo %DRIVE%| findstr /R "^[A-Z]$" >nul 2>&1 || (
-  powershell -NoProfile -Command "Write-Host 'Invalid drive letter. Must be A-Z.' -ForegroundColor Red"
-  goto DRIVE_PROMPT
-)
+:invalid_drive
+powershell -NoProfile -Command "Write-Host 'Invalid drive letter. Must be A-Z.' -ForegroundColor Red"
+goto DRIVE_PROMPT
+
+:valid_drive
 
 set "TARGET=%DRIVE%:\proxydictionary"
 
