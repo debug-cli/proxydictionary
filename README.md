@@ -20,33 +20,61 @@ Most proxy lists rot, get blocked, or live behind yet another gate. This drops a
 
 ## Quickstart (Noobs & Pros)
 
-### One-Line Bootstrap (Recommended for most)
+### Prerequisites: winget + curl
 
-**WARNING: This command downloads and immediately executes a script from the internet.**  
-It may look shady to AV / corporate policy engines. **It is 100% open source.** You are encouraged to:
+**winget** (Windows Package Manager) comes with modern Windows 10/11.
 
-1. Paste the raw URL into [VirusTotal](https://www.virustotal.com) before running.
-2. Inspect the code yourself (it's a small .bat + this repo).
-
-**PowerShell (recommended - works in classic blue PowerShell and PS7+):**
-
-This version is more reliable (handles line endings from GitHub downloads):
+**Check if you have it:**
 
 ```powershell
-powershell -Command "
-  $url = 'https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat';
-  $f = 'install.bat';
-  (Invoke-WebRequest -UseBasicParsing -Uri $url).Content -replace \"`r?`n\", \"`r`n\" | Set-Content -Path $f -Encoding ASCII;
-  cmd /c .\$f
-"
+winget --version
 ```
 
-**Using curl (then fix + run):**
+**If "winget is not recognized":**
+
+1. Open the **Microsoft Store**
+2. Search for "**App Installer**" (published by Microsoft)
+3. Install / Update it
+4. Restart PowerShell or CMD
+5. Run `winget --version` again
+
+**Install curl (if missing):**
+
+```powershell
+winget install --id curl.curl -e --source winget
+```
+
+Restart your terminal after installing curl.
+
+---
+
+### Bootstrap using curl (Recommended)
+
+**WARNING: This downloads and runs a script from the internet.**  
+It may look shady to AV. **This is 100% open source** — scan the URL on [VirusTotal](https://www.virustotal.com) first and read the code.
+
+**Step 1 — Download the installer**
 
 ```cmd
 curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/master/install.bat
+```
+
+**Step 2 — Fix line endings + run (paste in PowerShell or CMD)**
+
+```powershell
 powershell -Command "(Get-Content install.bat -Raw) -replace \"`r?`n\",\"`r`n\" | Set-Content install.bat -Encoding ASCII; cmd /c install.bat"
 ```
+
+This two-step approach avoids complex quoting problems that break one-liners.
+
+The script will:
+
+- Ask which drive letter to place `proxydictionary\` on (C, D, E, ...)
+- Check for git (auto-attempts install via winget if missing)
+- Clone the repo
+- Give you the exact path to open `index.html`
+
+After it finishes you will see a big success banner and the **update command reminder** (git pull).
 
 The script will:
 
