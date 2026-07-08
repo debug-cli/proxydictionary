@@ -1,17 +1,17 @@
 @echo off
 setlocal EnableDelayedExpansion
 
-:: proxydictionairy Windows bootstrap installer
+:: proxydictionary Windows bootstrap installer
 :: Flashy but 100% compatible with stock blue Windows PowerShell + CMD
 :: Asks drive letter, ensures git, clones so you can git pull later.
 
-title proxydictionairy Installer
+title proxydictionary Installer
 
 powershell -NoProfile -Command ^
 "$esc = [char]27; ^
 Write-Host ''; ^
 Write-Host ('='*60) -ForegroundColor Cyan; ^
-Write-Host '  PROXYDICTIONAIRY  -  PROXY DICTIONARY  BOOTSTRAP' -ForegroundColor White -BackgroundColor DarkBlue; ^
+Write-Host '  PROXYDICTIONARY  -  PROXY DICTIONARY  BOOTSTRAP' -ForegroundColor White -BackgroundColor DarkBlue; ^
 Write-Host ('='*60) -ForegroundColor Cyan; ^
 Write-Host ''; ^
 Write-Host '  Monolithic client-side proxy index (4100+ mirrors)' -ForegroundColor Green; ^
@@ -20,7 +20,7 @@ Write-Host ''; ^
 Write-Host '  This .bat will:' -ForegroundColor Yellow; ^
 Write-Host '    - Prompt for a drive letter (C, D, E...)' -ForegroundColor Yellow; ^
 Write-Host '    - Auto-install git via winget if missing' -ForegroundColor Yellow; ^
-Write-Host '    - Clone to DRIVE:\proxydictionairy' -ForegroundColor Yellow; ^
+Write-Host '    - Clone to DRIVE:\proxydictionary' -ForegroundColor Yellow; ^
 Write-Host ''; ^
 Write-Host ('-'*60) -ForegroundColor DarkGray; ^
 Write-Host '  SHADY-LOOKING COMMAND DISCLAIMER' -ForegroundColor Red -BackgroundColor Black; ^
@@ -47,9 +47,9 @@ powershell -NoProfile -Command ^
  Write-Host '    Type ONLY the letter and press ENTER' -ForegroundColor Gray; ^
  Write-Host ''; ^
  Write-Host '    EXAMPLES:' -ForegroundColor White; ^
- Write-Host '      D     -> will use D:\proxydictionairy' -ForegroundColor DarkGray; ^
- Write-Host '      C     -> will use C:\proxydictionairy (works too)' -ForegroundColor DarkGray; ^
- Write-Host '      E     -> E:\proxydictionairy' -ForegroundColor DarkGray; ^
+ Write-Host '      D     -> will use D:\proxydictionary' -ForegroundColor DarkGray; ^
+ Write-Host '      C     -> will use C:\proxydictionary (works too)' -ForegroundColor DarkGray; ^
+ Write-Host '      E     -> E:\proxydictionary' -ForegroundColor DarkGray; ^
  Write-Host ''"
 
 set /p "DRIVE=Drive letter [A-Z]: "
@@ -65,7 +65,7 @@ echo %DRIVE%| findstr /R "^[A-Z]$" >nul 2>&1 || (
   goto DRIVE_PROMPT
 )
 
-set "TARGET=%DRIVE%:\proxydictionairy"
+set "TARGET=%DRIVE%:\proxydictionary"
 
 powershell -NoProfile -Command "Write-Host ''; Write-Host \"Target folder: %TARGET%\" -ForegroundColor White -BackgroundColor DarkGreen; Write-Host ''"
 
@@ -112,7 +112,7 @@ if "%MODE%"=="update" (
   set "ACTION=UPDATED via git pull"
 ) else (
   if exist "%TARGET%" rd /s /q "%TARGET%" >nul 2>&1
-  git clone --depth 1 https://github.com/debug-cli/proxydictionairy.git "%TARGET%"
+  git clone --depth 1 https://github.com/debug-cli/proxydictionary.git "%TARGET%"
   if errorlevel 1 goto :fail
   set "ACTION=CLONED"
 )
@@ -121,7 +121,7 @@ if "%MODE%"=="update" (
 powershell -NoProfile -Command ^
 "Write-Host ''; ^
 Write-Host ('='*60) -ForegroundColor Green; ^
-Write-Host '   SUCCESS! proxydictionairy %ACTION%' -ForegroundColor Black -BackgroundColor Green; ^
+Write-Host '   SUCCESS! proxydictionary %ACTION%' -ForegroundColor Black -BackgroundColor Green; ^
 Write-Host ('='*60) -ForegroundColor Green; ^
 Write-Host ''; ^
 Write-Host '  Installed to: %TARGET%' -ForegroundColor White; ^

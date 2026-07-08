@@ -1,4 +1,4 @@
-# proxydictionairy
+# proxydictionary
 
 > **A monolithic client-side proxy reconnaissance and dispatch console.**  
 > Zero external dependencies. In-browser category index. localStorage-backed operator pinning. One-click URL exfil to clipboard. Air-gapped safe. 4100+ verified mirrors.
@@ -31,18 +31,18 @@ It may look shady to AV / corporate policy engines. **It is 100% open source.** 
 **Powershell (works in classic blue Powershell and PS7):**
 
 ```powershell
-powershell -Command "iwr -UseBasicParsing -Uri 'https://raw.githubusercontent.com/debug-cli/proxydictionairy/main/install.bat' -OutFile 'install.bat'; .\install.bat"
+powershell -Command "iwr -UseBasicParsing -Uri 'https://raw.githubusercontent.com/debug-cli/proxydictionary/main/install.bat' -OutFile 'install.bat'; .\install.bat"
 ```
 
 **CMD / curl (if available):**
 
 ```cmd
-curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionairy/main/install.bat && install.bat
+curl -L -o install.bat https://raw.githubusercontent.com/debug-cli/proxydictionary/main/install.bat && install.bat
 ```
 
 The script will:
 
-- Ask which drive letter to place `proxydictionairy\` on (C, D, E, ...)
+- Ask which drive letter to place `proxydictionary\` on (C, D, E, ...)
 - Check for git (auto-attempts install via winget if missing)
 - Clone the repo
 - Give you the exact path to open `index.html`
@@ -54,8 +54,8 @@ After it finishes you will see a big success banner and the **update command rem
 ```powershell
 # choose your drive
 cd D:\
-git clone https://github.com/debug-cli/proxydictionairy.git
-cd proxydictionairy
+git clone https://github.com/debug-cli/proxydictionary.git
+cd proxydictionary
 # open index.html or proxydictionary.html in any browser
 ```
 
@@ -64,7 +64,7 @@ cd proxydictionairy
 **After initial setup, keep your mirror list fresh with:**
 
 ```powershell
-cd D:\proxydictionairy
+cd D:\proxydictionary
 git pull
 ```
 
@@ -84,7 +84,7 @@ Then **hard refresh** the page in your browser (Ctrl + F5 or clear cache for tha
 ## Project Layout
 
 ```
-proxydictionairy/
+proxydictionary/
 ├── index.html              # Main payload (served at root on hosting)
 ├── proxydictionary.html    # Original filename copy
 ├── install.bat             # One-run installer for Windows
@@ -105,7 +105,7 @@ A: Right-click → Run as administrator sometimes helps, or temporarily disable 
 A: Run `winget install --id Git.Git -e --source winget` manually (may need admin terminal). Then re-run the installer or just `git clone`.
 
 **Q: Which drive letter should I pick?**  
-A: Any letter that exists on your machine with write access (usually C or D). The script will create `X:\proxydictionairy` (where X is the letter you type). Avoid system-reserved letters.
+A: Any letter that exists on your machine with write access (usually C or D). The script will create `X:\proxydictionary` (where X is the letter you type). Avoid system-reserved letters.
 
 **Q: Does this work in the old blue-icon Windows PowerShell?**  
 A: Yes. The installer and everything is tested for maximum compatibility with default Windows PowerShell (no fancy fonts or unicode icons required). Colors use basic Write-Host.
