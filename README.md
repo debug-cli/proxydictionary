@@ -116,7 +116,6 @@ cd proxydictionary
 
 **Tip:** For non-USB use, the easiest option is usually the live website:  
 https://proxydict.vercel.app
-```
 
 ## Updating the Dictionary
 
@@ -145,9 +144,11 @@ Then **hard refresh** the page in your browser (Ctrl + F5 or clear cache for tha
 ```
 proxydictionary/
 ├── index.html              # Main payload (served at root on hosting)
+├── index.html.bak          # Backup of previous index.html
 ├── proxydictionary.html    # Original filename copy
 ├── install.bat             # One-run installer for Windows
 ├── vercel.json             # Static hosting config
+├── icons/                  # UI icon assets
 ├── .gitignore
 └── README.md
 ```
