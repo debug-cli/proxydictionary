@@ -119,6 +119,10 @@ One entry per version. Dates are the day the change landed on the branch
   `links.yml` on `master`; the shieldcn.dev workflow-status badge could not
   be verified). No ICMP ping gate: GitHub runners block inbound ICMP, so
   HTTP is the gate.
+- PR comment fix: each section of the PR comment is capped at 20,000
+  characters (GitHub caps a comment at 65,536). The first run on this PR
+  checked all 4,126 URLs and the uncapped comment failed to post; the
+  truncated comment now posts and the full output stays in the run log.
 
 ## v1.0.0 — 2026-11-13 — Initial Release
 
