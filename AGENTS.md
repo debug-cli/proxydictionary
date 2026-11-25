@@ -616,6 +616,16 @@ gone, remove the entry (with the user's approval for removals) or replace
 if the page is healthy but flagged, the marker list in `tools/check_links.py`
 may need tuning — adjust it in the same PR and say why.
 
+Transient fetch failures are retried, not failed: `tools/check_links.py`
+retries a URL up to 3 times (2s, then 4s backoff) when the fetch itself fails
+(connection reset, disconnect, timeout, DNS). A real HTTP status or a
+content verdict is never retried. This exists because a host can drop a
+single request from a GitHub runner while the link is alive: on 2026-11-25
+the gate failed three runs in a row on live links, first on a false "404"
+marker, then twice on a connection reset from one host that returns HTTP 200
+everywhere else. A link that still fails after 3 attempts is reported as a
+fetch error with the attempt count.
+
 **No ICMP ping gate.** GitHub-hosted runners are Azure VMs where inbound
 ICMP is blocked, so `ping` cannot work there. HTTP is the gate. Do not
 re-add ping.
