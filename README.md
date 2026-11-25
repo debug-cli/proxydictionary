@@ -130,7 +130,8 @@ See [CHANGELOG.md](CHANGELOG.md).
   link is verified on its PR (lychee HTTP status + `tools/check_links.py`
   content check for error pages) with results posted as a PR comment, and
   the whole catalog is re-checked weekly. The README gained a link-check
-  status tile.
+  status tile. On bulk changes the comment is capped per section so it
+  posts instead of failing GitHub's comment size limit.
 - `DATA.md` (link-editing guide with copy-paste examples and the
   `node --check data/catalog.js` validation command) and `AGENTS.md`
   (technical book handbook) added.
