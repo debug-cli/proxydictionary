@@ -67,7 +67,7 @@ Then reload the page with Ctrl + Shift + R.
 
 ## What's in it
 
-As of 2026-11-13 the catalog holds 4,138 entries (4,092 unique URLs) across 31 projects. Interstellar mirrors make up 4,014 of them. Other projects include Koopbin, Nebulo OS, Lucide, Dominum UBG, DogeUB, Lunar, and a general Website Unblockers list.
+As of 2026-11-13 the catalog holds 4,138 entries (4,126 unique URLs) across 31 projects. Interstellar mirrors make up 4,014 of them. Other projects include Koopbin, Nebulo OS, Lucide, Dominum UBG, DogeUB, Lunar, and a general Website Unblockers list.
 
 Each entry has a URL, the project it runs, the project's own version when known, and a short note. Projects with a public source repo link to it.
 
@@ -97,7 +97,6 @@ Contributors and AI agents: read [AGENTS.md](AGENTS.md) before editing the catal
 | `CHANGELOG.md` | One entry per version. |
 | `assets/astryx/` | Vendored Astryx CSS v0.7.17 (reset, base, neutral theme, fonts). |
 | `assets/splashes/splashes.txt` | Splash phrases, one per line. |
-| `icons/` | UI icons |
 | `vercel.json` | Static hosting config |
 | `tools/` | One-off scripts that generated `data/catalog.js`; not part of the site. |
 
@@ -105,7 +104,7 @@ Contributors and AI agents: read [AGENTS.md](AGENTS.md) before editing the catal
 
 See [CHANGELOG.md](CHANGELOG.md).
 
-### v2.0.0 — 2026-11-25
+### v2.0.0 — 2026-11-24
 
 - Astryx design language migration (neutral theme, vendored
   `assets/astryx/reset.css`, `astryx.css`, `theme-neutral.css`, `fonts.css`
@@ -122,6 +121,13 @@ See [CHANGELOG.md](CHANGELOG.md).
 - `DATA.md` (link-editing guide with copy-paste examples and the
   `node --check data/catalog.js` validation command) and `AGENTS.md`
   (technical book handbook) added.
+- Pre-release fixes: heading contrast corrected in both themes (all
+  `light-dark()` token pairs reordered to `light-dark(light, dark)`; headings
+  use the site `--text` token), sidebar close icon replaced with an inline
+  Lucide `chevrons-left` SVG that no longer squishes when collapsed, fonts
+  switched to self-hosted Space Mono (code, URLs, headings) and Space Grotesk
+  (body, sidebar, buttons) with no CDN, and the README counts corrected to
+  4,138 entries / 4,126 unique URLs / 31 projects.
 
 ### v1.0.0 — 2026-11-13 — Initial Release
 

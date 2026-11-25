@@ -80,7 +80,7 @@ Tracked tree (2026-11-25, this branch). Counts verified with `wc` and `git`.
 
 ```
 .
-├── index.html                 292 lines  the site: markup + inline script
+├── index.html                 335 lines  the site: markup + inline script
 ├── proxydictionary.html       older copy of the site; use index.html
 ├── data/catalog.js            4,268 lines  the catalog, const data = {...}
 ├── DATA.md                    143 lines  the catalog editing guide
@@ -95,9 +95,14 @@ Tracked tree (2026-11-25, this branch). Counts verified with `wc` and `git`.
 │   ├── astryx.css              314,582 bytes
 │   ├── theme-neutral.css       30,284 bytes
 │   └── fonts.css               3,751 bytes  (Figtree woff2s deliberately omitted)
+├── assets/fonts/               self-hosted font files, OFL-1.1
+│   ├── SpaceMono-Regular.woff2     15,716 bytes
+│   ├── SpaceMono-Bold.woff2        15,916 bytes
+│   ├── SpaceGrotesk-Regular.woff2  42,708 bytes
+│   ├── SpaceGrotesk-Medium.woff2   42,796 bytes
+│   └── SpaceGrotesk-Bold.woff2     41,780 bytes
 ├── assets/splashes/
 │   └── splashes.txt            53 lines, 48 phrases
-├── icons/                      UI icons
 └── tools/                      one-off build scripts (not part of the site)
 ```
 
@@ -279,10 +284,15 @@ theme scope activates Astryx tokens.
 Token mapping:
 
 - The hand-written `:root` / `[data-theme="light"]` blocks were replaced with
-  one `:root` block using `light-dark(dark, light)` for every color:
+  one `:root` block using `light-dark(light, dark)` for every color:
   `--bg`, `--sidebar-bg`, `--sidebar-border`, `--text`, `--text-muted`,
   `--link`, `--entry-bg`, `--entry-border`, `--code-bg`, `--btn-bg`,
-  `--btn-border`, `--active-bg`, `--splash`.
+  `--btn-border`, `--active-bg`, `--splash`. (The v2.0.0 commit shipped these
+  inverted; the contrast fix swapped every pair.)
+- Headings use `color: var(--text)` so heading color resolves against the same
+  scheme as the background. Astryx `--color-text-primary` resolves against a
+  different scheme (`data-astryx-media` / `prefers-color-scheme`) and caused
+  unreadable headings in both themes.
 - `border-radius: var(--radius-element, 8px)` on `.entry`.
 - `transition: var(--duration-medium, 0.2s)` on `body` and `.url-link`;
   `transition: var(--duration-fast, 0.1s)` on `.sidebar-item`.
@@ -295,6 +305,23 @@ readability (320 px sidebar stack, wrapping URL cards).
 
 The theme toggle now also sets `html.style.colorScheme` so `light-dark()`
 switches with the saved theme (dark by default, `localStorage` key `theme`).
+
+### Fonts
+
+Body text, sidebar items, and buttons use Space Grotesk; headings, URLs, and
+the welcome title use Space Mono. Both families are self-hosted in
+`assets/fonts/` (OFL-1.1) with `@font-face` rules and system fallbacks:
+
+- Space Mono 400 (`SpaceMono-Regular.woff2`, 15,716 bytes) and 700
+  (`SpaceMono-Bold.woff2`, 15,916 bytes).
+- Space Grotesk 400 (`SpaceGrotesk-Regular.woff2`, 42,708 bytes), 500
+  (`SpaceGrotesk-Medium.woff2`, 42,796 bytes), and 700
+  (`SpaceGrotesk-Bold.woff2`, 41,780 bytes).
+
+No Google Fonts CDN link is used: a CDN link breaks `file://` offline use.
+Only the weights used are shipped; the Figtree woff2s referenced by the
+vendored Astryx `fonts.css` are deliberately not copied (they 404 harmlessly
+and fall back to the system sans stack).
 
 ---
 
@@ -337,6 +364,14 @@ short, casual, one-liners, some personal, some about the site.
 `filterCategories()` filters sidebar items by typed text (case-insensitive
 substring match on `innerText`).
 
+Sidebar toggle: the `icons/Sidebar-Line-Left--Streamline-Ultimate.png` was
+replaced with an inline Lucide `chevrons-left` SVG (two chevrons pointing
+left), 18x18 with `flex-shrink: 0` on both the button and the SVG, centered
+in the collapsed 40px header (`justify-content: center` on
+`.sidebar-header`). The SVG uses `currentColor`, so it follows the theme
+without an invert filter. The Streamline PNG was deleted and the empty
+`icons/` directory removed (nothing else used them).
+
 ---
 
 ## 12. The left-bar bug and its fix
@@ -375,6 +410,7 @@ Run these on every change:
 node --check data/catalog.js        # the catalog must parse
 git diff --check                    # no whitespace errors
 node --check <extracted script>     # any extracted or added JavaScript
+ls assets/fonts/*.woff2             # all five font files present (158,916 bytes total)
 ```
 
 Manual checks (Chrome, Edge, or Helium; the preview URL counts):
@@ -384,12 +420,20 @@ Manual checks (Chrome, Edge, or Helium; the preview URL counts):
 3. Type in the search box: the sidebar filters.
 4. A splash phrase shows and changes on reload.
 5. Theme toggle works in light and dark mode; `light-dark()` colors follow.
-6. Copy buttons write the URL to the clipboard and show the toast.
-7. Mobile width: sidebar and cards remain readable.
-8. Open `index.html` from disk with no server: all data shows, splash shows
-   (fallback list), no console errors from missing fetch.
-9. Break one entry in a scratch copy of `data/catalog.js`: the sidebar still
-   renders the other projects and the console logs the skip.
+6. Headings (welcome title, category `h1`, `VERSION: h3`) are readable in light
+   mode and again after toggling to dark mode — not white-on-white or
+   black-on-dark.
+7. Copy buttons write the URL to the clipboard and show the toast.
+8. Mobile width: sidebar and cards remain readable.
+9. Sidebar close icon is not squished in the open state or the collapsed
+   40px state; it keeps its 18x18 aspect ratio.
+10. Space Mono and Space Grotesk render in both themes, and from disk
+    (`file://`) with no server — no fallback to system fonts and no 404s for
+    `assets/fonts/*.woff2`.
+11. Open `index.html` from disk with no server: all data shows, splash shows
+    (fallback list), no console errors from missing fetch.
+12. Break one entry in a scratch copy of `data/catalog.js`: the sidebar still
+    renders the other projects and the console logs the skip.
 
 Report each `node --check` and `git diff --check` result in the change note.
 
@@ -405,6 +449,10 @@ Report each `node --check` and `git diff --check` result in the change note.
   execute it. Use `textContent`.
 - **Do not copy the Figtree woff2 files.** `fonts.css` asks for them and they
   are not vendored; 404s are expected and harmless (system sans fallback).
+- **Do not link Google Fonts (or any font CDN).** The site must work from
+  `file://` with no network. Ship the woff2 files in `assets/fonts/` and
+  register them with `@font-face`; add a new weight only by adding its file
+  and rule together.
 - **Do not drop `data-astryx-theme="neutral"` from `<html>`.** Without it the
   Astryx token scope is inactive and the theme CSS does not apply.
 - **Do not edit `proxydictionary.html`.** It is the older copy; leave it unless
@@ -449,6 +497,8 @@ entry in `index.html` only if a GitHub link should show on the card.
 
 - [ ] `node --check data/catalog.js` passes
 - [ ] `git diff --check` is clean
+- [ ] `AGENTS.md`, the README Changelog section, and `CHANGELOG.md` updated
+      in this same change (Maintenance rule)
 - [ ] Catalog entry count preserved (4,138 entries, 31 projects — verified by
       the §13 script or by recounting the tree)
 - [ ] Every new entry has `url`, `notes`, `version`, `dateAdded`
@@ -457,17 +507,18 @@ entry in `index.html` only if a GitHub link should show on the card.
 - [ ] Sidebar lists all projects; search filters; click shows links
 - [ ] Theme toggle switches light/dark; `colorScheme` follows
 - [ ] `index.html` opens from disk with no server
-- [ ] AGENTS.md, README.md Changelog section, CHANGELOG.md updated together
 
 ---
 
 ## 17. Open questions
 
-- The README states "4,092 unique URLs" as of 2026-11-13; the tree shows
-  4,126 unique raw URLs (4,122 scheme-insensitive). The difference is
-  unverified; do not change either number without re-counting the tree.
-- `fonts.css` 404s for the missing woff2 files are deliberate per the task,
-  but noisy in the console. Revisit if the font files are ever vendored.
+- The README once stated "4,092 unique URLs"; the verified tree count is
+  4,126 unique raw URLs (4,122 scheme-insensitive) across 4,138 entries and
+  31 projects. The README now carries the verified numbers; recount the tree
+  before touching any of them.
+- `fonts.css` 404s for the missing Figtree woff2 files are deliberate per the
+  task, but noisy in the console. Space Mono and Space Grotesk are vendored
+  in `assets/fonts/` and do load; the Figtree files remain omitted.
 - No CI or test runner exists in this repo; verification is manual plus
   `node --check`.
 
@@ -488,14 +539,14 @@ ship a change with a stale `AGENTS.md` or a missing changelog entry.
 Everything here is checkable from a clone:
 
 ```bash
-wc -l index.html data/catalog.js assets/splashes/splashes.txt      # 292, 4268, 53
+wc -l index.html data/catalog.js assets/splashes/splashes.txt      # 335, 4268, 53
 wc -c assets/astryx/reset.css assets/astryx/astryx.css             # 11928, 314582
 wc -c assets/astryx/theme-neutral.css assets/astryx/fonts.css      # 30284, 3751
+wc -c assets/fonts/*.woff2                                         # 158916 total (5 files)
 grep -vcE '^\s*(#|$)' assets/splashes/splashes.txt                 # 48 phrases
-git log --all --format=%ad --date=short | sort -u                   # 2026-11-13
-git rev-list --all --count                                          # 1 commit
-node --check data/catalog.js                                        # exit 0
-git diff --check                                                    # clean
+git rev-list --all --count                                         # 3 as of this change (grows per commit)
+node --check data/catalog.js                                       # exit 0
+git diff --check                                                   # clean
 ```
 
 If a number here disagrees with the tree, the tree is right: fix the

@@ -4,25 +4,73 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Proxy Dictionary</title>
+    <link rel="stylesheet" href="assets/astryx/reset.css">
+    <link rel="stylesheet" href="assets/astryx/astryx.css">
+    <link rel="stylesheet" href="assets/astryx/theme-neutral.css">
+    <link rel="stylesheet" href="assets/astryx/fonts.css">
     <style>
+        @font-face {
+            font-family: "Space Mono";
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url("assets/fonts/SpaceMono-Regular.woff2") format("woff2");
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+        @font-face {
+            font-family: "Space Mono";
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url("assets/fonts/SpaceMono-Bold.woff2") format("woff2");
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+        @font-face {
+            font-family: "Space Grotesk";
+            font-style: normal;
+            font-weight: 400;
+            font-display: swap;
+            src: url("assets/fonts/SpaceGrotesk-Regular.woff2") format("woff2");
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+        @font-face {
+            font-family: "Space Grotesk";
+            font-style: normal;
+            font-weight: 500;
+            font-display: swap;
+            src: url("assets/fonts/SpaceGrotesk-Medium.woff2") format("woff2");
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
+        @font-face {
+            font-family: "Space Grotesk";
+            font-style: normal;
+            font-weight: 700;
+            font-display: swap;
+            src: url("assets/fonts/SpaceGrotesk-Bold.woff2") format("woff2");
+            unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+        }
         :root {
-            --bg: light-dark(#0d1117, #fdfdfd);
-            --sidebar-bg: light-dark(#161b22, #f8f9fa);
-            --sidebar-border: light-dark(#30363d, #eee);
-            --text: light-dark(#c9d1d9, #333);
-            --text-muted: light-dark(#8b949e, #888);
-            --link: light-dark(#58a6ff, #007bff);
-            --entry-bg: light-dark(#161b22, #fff);
-            --entry-border: light-dark(#30363d, #f0f0f0);
-            --code-bg: light-dark(#0d1117, #f4f4f4);
-            --btn-bg: light-dark(#21262d, #fff);
-            --btn-border: light-dark(#30363d, #d0d7de);
-            --active-bg: light-dark(#1f6feb33, #eef6ff);
-            --splash: light-dark(#ffcf00, #d4a017);
+            --bg: light-dark(#fdfdfd, #0d1117);
+            --sidebar-bg: light-dark(#f8f9fa, #161b22);
+            --sidebar-border: light-dark(#eee, #30363d);
+            --text: light-dark(#333, #c9d1d9);
+            --text-muted: light-dark(#888, #8b949e);
+            --link: light-dark(#007bff, #58a6ff);
+            --entry-bg: light-dark(#fff, #161b22);
+            --entry-border: light-dark(#f0f0f0, #30363d);
+            --code-bg: light-dark(#f4f4f4, #0d1117);
+            --btn-bg: light-dark(#fff, #21262d);
+            --btn-border: light-dark(#d0d7de, #30363d);
+            --active-bg: light-dark(#eef6ff, #1f6feb33);
+            --splash: light-dark(#d4a017, #ffcf00);
+        }
+        h1, h2, h3, h4, h5, h6 {
+            color: var(--text);
+            font-family: "Space Mono", "Courier New", Courier, monospace;
         }
         * { box-sizing: border-box; }
         body { 
-            font-family: "Consolas", "Monaco", monospace;
+            font-family: "Space Grotesk", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             margin: 0; display: flex; height: 100vh; background: var(--bg); color: var(--text); transition: var(--duration-medium, 0.2s);
         }
         #sidebar { width: 320px; background: var(--sidebar-bg); border-right: 1px solid var(--sidebar-border); display: flex; flex-direction: column; flex-shrink: 0; }
@@ -44,13 +92,12 @@
         /* Collapsible sidebar */
         #sidebar.collapsed { width: 40px; border-right: none; overflow: visible; }
         #sidebar.collapsed #sidebar-list { display: none; }
-        #sidebar.collapsed .sidebar-header { padding: 10px; width: 40px; justify-content: flex-start; }
+        #sidebar.collapsed .sidebar-header { padding: 10px; width: 40px; justify-content: center; }
         #sidebar.collapsed #search-input { display: none; }
         #sidebar.collapsed .sidebar-header h2 { display: none; }
-        .sidebar-toggle { background: none; border: none; cursor: pointer; padding: 5px; }
+        .sidebar-toggle { background: none; border: none; cursor: pointer; padding: 5px; display: inline-flex; align-items: center; justify-content: center; flex-shrink: 0; }
         .sidebar-toggle:hover { color: var(--link); }
-        .sidebar-toggle img { width: 18px; height: 18px; }
-        [data-theme="dark"] .sidebar-toggle img { filter: invert(1); }
+        .sidebar-toggle svg { width: 18px; height: 18px; flex-shrink: 0; display: block; }
         #content { flex-grow: 1; padding: 40px; overflow-y: auto; position: relative; display: flex; flex-direction: column; transition: 0.3s; }
         .category-section { display: none; width: 100%; }
         .category-section.active { display: block; }
@@ -63,7 +110,7 @@
 
         .entry { margin-bottom: 15px; padding: 15px; border: 1px solid var(--entry-border); border-radius: var(--radius-element, 8px); background: var(--entry-bg); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
         .url-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
-        .url-link { color: var(--link); text-decoration: none; background: var(--code-bg); padding: 6px 12px; border-radius: 6px; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid transparent; transition: var(--duration-medium, 0.2s); font-family: inherit; }
+        .url-link { color: var(--link); text-decoration: none; background: var(--code-bg); padding: 6px 12px; border-radius: 6px; flex-grow: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; border: 1px solid transparent; transition: var(--duration-medium, 0.2s); font-family: "Space Mono", "Courier New", Courier, monospace; }
         .url-link:hover { border-color: var(--link); background: var(--active-bg); }
         .copy-btn { padding: 6px 14px; font-size: 11px; background: var(--btn-bg); border: 1px solid var(--btn-border); border-radius: 6px; cursor: pointer; color: var(--text); font-weight: bold; flex-shrink: 0; }
         
@@ -93,15 +140,11 @@
         .theme-toggle { position: absolute; top: 20px; right: 20px; padding: 8px 16px; border-radius: 20px; background: var(--btn-bg); border: 1px solid var(--btn-border); color: var(--text); cursor: pointer; font-family: inherit; font-size: 11px; font-weight: bold; }
         .toast { position: fixed; bottom: 25px; right: 25px; background: #333; color: #fff; padding: 12px 24px; border-radius: 8px; font-size: 12px; display: none; z-index: 1000; border: 1px solid #444; }
     </style>
-    <link rel="stylesheet" href="assets/astryx/reset.css">
-    <link rel="stylesheet" href="assets/astryx/astryx.css">
-    <link rel="stylesheet" href="assets/astryx/theme-neutral.css">
-    <link rel="stylesheet" href="assets/astryx/fonts.css">
 </head>
 <body>
     <div id="sidebar">
         <div class="sidebar-header">
-            <button class="sidebar-toggle" onclick="toggleSidebar()"><img src="icons/Sidebar-Line-Left--Streamline-Ultimate.png" alt="Toggle"></button><h2>Proxy Dictionary</h2>
+            <button class="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle sidebar"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m11 17-5-5 5-5"/><path d="m18 17-5-5 5-5"/></svg></button><h2>Proxy Dictionary</h2>
             <input type="text" id="search-input" placeholder="Search Categories..." oninput="filterCategories()">
         </div>
 <div id="sidebar-list"></div>
@@ -248,7 +291,7 @@
                         console.error("[proxydict] skipping bad version", cat, ver, entries);
                         return;
                     }
-                    if (ver !== "Unknown") html += `<h3 style="margin-top:30px; color:var(--text-muted); font-size:12px; border-bottom:1px dashed var(--sidebar-border); padding-bottom:5px;">VERSION: ${ver}</h3>`;
+                    if (ver !== "Unknown") html += `<h3 style="margin-top:30px; font-size:12px; border-bottom:1px dashed var(--sidebar-border); padding-bottom:5px;">VERSION: ${ver}</h3>`;
                     entries.forEach(e => {
                         try {
                             if (!e || typeof e.url !== 'string' || typeof e.notes !== 'string') {
