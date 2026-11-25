@@ -26,6 +26,7 @@ import argparse
 import json
 import re
 import sys
+import time
 import urllib.error
 import urllib.request
 from concurrent.futures import ThreadPoolExecutor
@@ -74,18 +75,45 @@ BODY_MARKERS = [
 ]
 TOKEN_404 = re.compile(r"(?<![\d.])404(?!\d)")
 
+# Transient fetch failures (connection reset, disconnect, timeout, DNS)
+# are retried: hosts sometimes drop a single request from a GitHub runner
+# even when the link is alive. A real HTTP status or a content verdict is
+# never retried — those are definitive answers, not noise.
+MAX_ATTEMPTS = 3
+RETRY_DELAY_SECONDS = 2
+
+
+def fetch_url(url, timeout=30):
+    """Fetch once. Returns (status, body) or raises on a transport failure."""
+    req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
+        return resp.status, resp.read(MAX_BODY_BYTES)
+
 
 def check_url(url, timeout=30):
     """Return (ok, reason). Fetches the URL and applies the three rules."""
-    try:
-        req = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
-        with urllib.request.urlopen(req, timeout=timeout) as resp:
-            status = resp.status
-            body = resp.read(MAX_BODY_BYTES)
-    except urllib.error.HTTPError as e:
-        return False, f"HTTP {e.code}"
-    except Exception as e:  # connection, SSL, timeout, DNS
-        return False, f"fetch error: {e.__class__.__name__}: {e}"
+    body = None
+    status = None
+    attempts = 0
+    last_error = None
+    while attempts < MAX_ATTEMPTS:
+        attempts += 1
+        try:
+            status, body = fetch_url(url, timeout)
+            last_error = None
+            break
+        except urllib.error.HTTPError as e:
+            return False, f"HTTP {e.code}"
+        except Exception as e:  # connection, SSL, timeout, DNS
+            last_error = e
+            if attempts < MAX_ATTEMPTS:
+                time.sleep(RETRY_DELAY_SECONDS * attempts)
+    if last_error is not None:
+        return False, (
+            f"fetch error after {attempts} attempts: "
+            f"{last_error.__class__.__name__}: {last_error}"
+        )
+    retried = f" (after {attempts} attempts)" if attempts > 1 else ""
 
     if status != 200:
         return False, f"HTTP {status}"
@@ -100,14 +128,14 @@ def check_url(url, timeout=30):
         if marker in low_title:
             return False, f"error-page marker in title: {marker!r}"
     if TOKEN_404.search(title):
-        return False, "error-page marker in title: '404'"
+        return False, "error-page marker in title: 404"
     low_body = text.lower()
     for marker in BODY_MARKERS:
         if marker in low_body:
             return False, f"error-page marker in body: {marker!r}"
     if TOKEN_404.search(text):
-        return False, "error-page marker in body: standalone '404'"
-    return True, f"HTTP 200, {len(body)} bytes, no error markers"
+        return False, "error-page marker in body: standalone 404"
+    return True, f"HTTP 200, {len(body)} bytes, no error markers{retried}"
 
 
 def load_catalog_urls(path):
