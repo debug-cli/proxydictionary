@@ -82,14 +82,14 @@ Consequences:
 
 ## 2. Repository map
 
-Tracked tree (2026-11-24, this branch). Counts verified with `wc` and `git`.
+Tracked tree (2026-11-25, this branch). Counts verified with `wc` and `git`.
 
 ```
 .
 ├── index.html                 335 lines  the site: markup + inline script
 ├── proxydictionary.html       older copy of the site; use index.html
-├── data/catalog.json          24,958 lines  the catalog SOURCE OF TRUTH (edit this)
-├── data/catalog.js            4,268 lines  GENERATED from catalog.json; const data = {...}
+├── data/catalog.json          484 lines  the catalog SOURCE OF TRUTH (edit this)
+├── data/catalog.js            124 lines  GENERATED from catalog.json; const data = {...}
 ├── DATA.md                    the catalog editing guide (JSON workflow)
 ├── AGENTS.md                    this file  engineering handbook
 ├── CHANGELOG.md                  one entry per version
@@ -120,8 +120,8 @@ Tracked tree (2026-11-24, this branch). Counts verified with `wc` and `git`.
     └── migrate_index.py        one-off: rewrote index.html for the v2 layout
 ```
 
-- Catalog: 31 projects, 33 version blocks, 4,138 entries, 4,126 unique URLs.
-  Interstellar mirrors make up 4,014 of the entries.
+- Catalog: 12 projects, 13 version blocks, 72 entries, 69 unique URLs.
+  Interstellar mirrors make up 54 of the entries.
 - Entry dates are real per-URL git dates, not backfill guesses. The catalog
   was built by several commits on `master` between 2026-07-07 and 2026-07-09
   (the initial payload, then the Nebulo OS category); the 2026-11-13 merge
@@ -430,7 +430,7 @@ Between the Lunar section close and the Rosin section open the single
 `render()` never ran and the splash code never ran either.
 
 **Fix:** delete the stray comma (`]}, , "Rosin":` → `]}, "Rosin":`). After
-the fix `node --check` passes, the sidebar lists all 31 projects on load,
+the fix `node --check` passes, the sidebar lists all 12 projects on load,
 clicking a project shows its links, and the search box filters.
 
 **Prevention:** the catalog moved out of `index.html` into `data/catalog.js`
@@ -455,7 +455,7 @@ ls assets/fonts/*.woff2                             # all five font files (158,9
 
 Manual checks (Chrome, Edge, or Helium; the preview URL counts):
 
-1. Open the preview: the sidebar lists all 31 projects on load.
+1. Open the preview: the sidebar lists all 12 projects on load.
 2. Click a project: its links show.
 3. Type in the search box: the sidebar filters.
 4. A splash phrase shows and changes on reload.
@@ -546,7 +546,7 @@ entry in `index.html` only if a GitHub link should show on the card.
 - [ ] `git diff --check` is clean
 - [ ] `AGENTS.md`, the README Changelog section, and `CHANGELOG.md` updated
       in this same change (Maintenance rule)
-- [ ] Catalog entry count preserved (4,138 entries, 31 projects — verified by
+- [ ] Catalog entry count preserved (72 entries, 12 projects — verified by
       the §13 script or by recounting the tree)
 - [ ] Every new entry has `url`, `notes`, `version`, `dateAdded`
 - [ ] No invented URLs or dates; dates are `YYYY-MM-DD` or `"unknown"`
@@ -559,10 +559,11 @@ entry in `index.html` only if a GitHub link should show on the card.
 
 ## 17. Open questions
 
-- The README once stated "4,092 unique URLs"; the verified tree count is
+- The README once stated "4,092 unique URLs"; the verified tree count was
   4,126 unique raw URLs (4,122 scheme-insensitive) across 4,138 entries and
-  31 projects. The README now carries the verified numbers; recount the tree
-  before touching any of them.
+  31 projects. The dead-link cleanup (2026-11-25) removed 4,066 dead entries,
+  leaving 72 entries (69 unique URLs) across 12 projects. The README now
+  carries the verified numbers; recount the tree before touching any of them.
 - `fonts.css` 404s for the missing Figtree woff2 files are deliberate per the
   task, but noisy in the console. Space Mono and Space Grotesk are vendored
   in `assets/fonts/` and do load; the Figtree files remain omitted.
@@ -590,7 +591,7 @@ When it runs:
 
 - **Pull requests that touch `data/catalog.json` or `data/catalog.js`**:
   only the URLs added or changed in the PR diff are checked — never all
-  4,138. Results are posted as a comment on the PR (updated on every push),
+  72. Results are posted as a comment on the PR (updated on every push),
   listing each checked link with pass or fail and the reason. A failing link
   fails the check, which blocks the merge.
 - **Weekly (Mondays 06:17 UTC) and on manual dispatch**: every catalog URL
@@ -604,7 +605,7 @@ body too small, or the marker found). On a bulk change the comment is
 capped: each section is truncated to 20,000 characters (GitHub caps a
 comment at 65,536) and the full output is in the workflow run log.
 
-A bulk change touches every catalog line, so the gate checks all 4,126 URLs
+A bulk change touches every catalog line, so the gate checks all 69 URLs
 and fails on pre-existing dead mirrors. That failure is about old links,
 not the change; fix dead links in a separate PR, never by weakening the
 gate.
@@ -641,7 +642,7 @@ Everything here is checkable from a clone:
 
 ```bash
 wc -l index.html data/catalog.js data/catalog.json assets/splashes/splashes.txt
-#        335        4268          24958          53
+#        335         124            484          53
 wc -c assets/astryx/reset.css assets/astryx/astryx.css             # 11928, 314582
 wc -c assets/astryx/theme-neutral.css assets/astryx/fonts.css      # 30284, 3751
 wc -c assets/fonts/*.woff2                                         # 158916 total (5 files)
