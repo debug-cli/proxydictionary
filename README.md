@@ -138,7 +138,9 @@ See [CHANGELOG.md](CHANGELOG.md).
   content check for error pages) with results posted as a PR comment, and
   the whole catalog is re-checked weekly. The README gained a link-check
   status tile. On bulk changes the comment is capped per section so it
-  posts instead of failing GitHub's comment size limit.
+  posts instead of failing GitHub's comment size limit. Transient fetch
+  failures are retried up to 3 times before a link fails (a host can drop
+  a single request from a GitHub runner while the link is alive).
 - `DATA.md` (link-editing guide with copy-paste examples and the
   `node --check data/catalog.js` validation command) and `AGENTS.md`
   (technical book handbook) added.
