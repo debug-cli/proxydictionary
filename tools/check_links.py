@@ -128,13 +128,13 @@ def check_url(url, timeout=30):
         if marker in low_title:
             return False, f"error-page marker in title: {marker!r}"
     if TOKEN_404.search(title):
-        return False, "error-page marker in title: 404"
+        return False, "error-page marker in title: '404'"
     low_body = text.lower()
     for marker in BODY_MARKERS:
         if marker in low_body:
             return False, f"error-page marker in body: {marker!r}"
     if TOKEN_404.search(text):
-        return False, "error-page marker in body: standalone 404"
+        return False, "error-page marker in body: standalone '404'"
     return True, f"HTTP 200, {len(body)} bytes, no error markers{retried}"
 
 
