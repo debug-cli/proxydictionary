@@ -41,8 +41,11 @@ jobs:
           # catalog.json an entry's URL can sit on a context line when only
           # its notes or dateAdded changed. Over-inclusion is harmless (a few
           # extra links get re-checked); missing a changed link is not.
+          # Removed lines are excluded because a cleanup that deletes dead
+          # links must not fail its own gate on the links it deletes.
           git diff "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" \
               -- data/catalog.json data/catalog.js \
+            | grep -E '^[+ ]' \
             | grep -oE 'https?://[^"\\ ]+' | sort -u > new_urls.txt || true
           COUNT=$(grep -c . new_urls.txt || true)
           echo "COUNT=$COUNT" >> "$GITHUB_ENV"
@@ -75,20 +78,29 @@ jobs:
           script: |
             const fs = require('fs');
             const read = (p) => fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '_(no output)_';
+            // GitHub caps an issue comment at 65,536 characters. A bulk diff
+            // (a date backfill touches every catalog line) can check all
+            // 4,126 URLs, and the full lychee + content output is far larger
+            // than that, which fails this step with "Body is too long" and
+            // posts nothing at all. Cap each section and say so.
+            const MAX_SECTION = 20000;
+            const trunc = (s, name) => s.length > MAX_SECTION
+              ? s.slice(0, MAX_SECTION) + `\n\n_(${name} truncated to ${MAX_SECTION} characters; the full output is in the workflow run log.)_`
+              : s;
+            const count = process.env.COUNT || '?';
             const body = [
               '<!-- proxydict-linkcheck -->',
               '## Link check — new and changed URLs',
               '',
-              'Only URLs added or changed in `data/catalog.json` / `data/catalog.js`',
-              'in this PR are checked. A link passes only when both checks pass.',
+              `Checked ${count} URL(s) added or changed in \`data/catalog.json\` / \`data/catalog.js\` in this PR. A link passes only when both checks pass.`,
               '',
               '### HTTP status (lychee)',
               '',
-              read('lychee-new.md'),
+              trunc(read('lychee-new.md'), 'lychee output'),
               '',
               '### Content check (`tools/check_links.py`)',
               '',
-              read('content-new.md'),
+              trunc(read('content-new.md'), 'content-check output'),
               '',
               'This comment is updated on every push to the PR.',
             ].join('\n');
