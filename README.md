@@ -68,11 +68,18 @@ Then reload the page with Ctrl + Shift + R.
 
 ## What's in it
 
-As of 2026-11-13 the catalog holds 4,138 entries (4,126 unique URLs) across 31 projects. Interstellar mirrors make up 4,014 of them. Other projects include Koopbin, Nebulo OS, Lucide, Dominum UBG, DogeUB, Lunar, and a general Website Unblockers list.
+As of 2026-11-25 the catalog holds 72 entries (69 unique URLs) across 12 projects. Interstellar mirrors make up 54 of them. Other projects include Dominum UBG, Lucide, DogeUB, Fern, and a few single-link projects. A dead-link cleanup on 2026-11-25 removed 4,066 entries that no longer load; the catalog was 4,138 entries before it.
 
 Each entry has a URL, the project it runs, the project's own version when known, and a short note. Projects with a public source repo link to it.
 
 Links are checked when they are added: the link-check workflow verifies each new link before it merges. Older mirrors still go down and get blocked often. If one fails, try the next.
+
+## Link checks
+
+Two automatic checks keep the catalog honest (`.github/workflows/links.yml`):
+
+- **On a pull request that touches the catalog** (`data/catalog.json` or `data/catalog.js`): only the links added or changed in that PR are checked. A link must return HTTP 200, serve a real page over 1,000 bytes, and not be an error page. Results are posted as a comment on the PR, and a failing link blocks the merge. A PR that only changes docs or the site never runs this check.
+- **Weekly, Mondays 06:17 UTC**: every link in the catalog is checked the same way. Failures are listed in the workflow run summary. That run never blocks a merge; fix flagged links in a normal PR.
 
 ## Adding or fixing a link
 
@@ -142,6 +149,13 @@ See [CHANGELOG.md](CHANGELOG.md).
   switched to self-hosted Space Mono (code, URLs, headings) and Space Grotesk
   (body, sidebar, buttons) with no CDN, and the README counts corrected to
   4,138 entries / 4,126 unique URLs / 31 projects.
+- Dead-link cleanup (2026-11-25): the whole catalog was checked link by link
+  (lychee + `tools/check_links.py`); 4,066 entries no longer load and were
+  removed, including the entire `s3.amazonaws.com/elliotslinks` bucket
+  (Amazon disabled all access to it, so every Interstellar mirror on it is
+  gone) and `https://nebulos.app` (its Vercel deployment is gone). 72 entries
+  (69 unique URLs) across 12 projects remain, all verified live; 19 projects
+  lost every link and were removed.
 
 ### v1.0.0 — 2026-11-13 — Initial Release
 
