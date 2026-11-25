@@ -1,0 +1,189 @@
+name: links
+
+# Link checker for the proxy catalog.
+#
+# - Pull requests that touch data/catalog.json or data/catalog.js: only the
+#   URLs added or changed in the PR diff are checked, twice (lychee for HTTP
+#   status, tools/check_links.py for content). Results are posted as a PR
+#   comment and a failing link fails the check, which blocks the merge.
+# - Weekly schedule: every catalog URL is checked and failures are listed in
+#   the workflow run summary. That run never blocks merges.
+#
+# There is no ICMP ping gate on purpose: GitHub-hosted runners are Azure VMs
+# where inbound ICMP is blocked, so ping cannot work there. HTTP is the gate.
+
+on:
+  pull_request:
+    paths:
+      - "data/catalog.json"
+      - "data/catalog.js"
+  schedule:
+    - cron: "17 6 * * 1" # Mondays 06:17 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  check-new-links:
+    name: New and changed links (PR gate)
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      - name: Extract URLs added or changed in the PR diff
+        run: |
+          # Every URL on any line of the diff counts: in pretty-printed
+          # catalog.json an entry's URL can sit on a context line when only
+          # its notes or dateAdded changed. Over-inclusion is harmless (a few
+          # extra links get re-checked); missing a changed link is not.
+          git diff "${{ github.event.pull_request.base.sha }}...${{ github.event.pull_request.head.sha }}" \
+              -- data/catalog.json data/catalog.js \
+            | grep -oE 'https?://[^"\\ ]+' | sort -u > new_urls.txt || true
+          COUNT=$(grep -c . new_urls.txt || true)
+          echo "COUNT=$COUNT" >> "$GITHUB_ENV"
+          echo "URLs added or changed: $COUNT"
+          cat new_urls.txt
+
+      - name: HTTP status check (lychee)
+        if: env.COUNT != '0'
+        id: lychee
+        uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          args: --no-progress --accept 200 new_urls.txt
+          fail: false
+          failIfEmpty: false
+          jobSummary: false
+          output: lychee-new.md
+
+      - name: Content check (200, body > 1000 bytes, no error pages)
+        if: env.COUNT != '0'
+        id: content
+        run: |
+          set +e
+          python3 tools/check_links.py --file new_urls.txt --workers 8 > content-new.md
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: Post results as PR comment
+        if: always() && env.COUNT != '0'
+        uses: actions/github-script@v9
+        with:
+          script: |
+            const fs = require('fs');
+            const read = (p) => fs.existsSync(p) ? fs.readFileSync(p, 'utf8') : '_(no output)_';
+            const body = [
+              '<!-- proxydict-linkcheck -->',
+              '## Link check — new and changed URLs',
+              '',
+              'Only URLs added or changed in `data/catalog.json` / `data/catalog.js`',
+              'in this PR are checked. A link passes only when both checks pass.',
+              '',
+              '### HTTP status (lychee)',
+              '',
+              read('lychee-new.md'),
+              '',
+              '### Content check (`tools/check_links.py`)',
+              '',
+              read('content-new.md'),
+              '',
+              'This comment is updated on every push to the PR.',
+            ].join('\n');
+            const { owner, repo } = context.repo;
+            const issue_number = context.issue.number;
+            const marker = '<!-- proxydict-linkcheck -->';
+            const comments = await github.rest.issues.listComments({ owner, repo, issue_number, per_page: 100 });
+            const existing = comments.data.find(c => c.body && c.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({ owner, repo, comment_id: existing.id, body });
+            } else {
+              await github.rest.issues.createComment({ owner, repo, issue_number, body });
+            }
+
+      - name: Fail the check when a new link fails
+        if: always()
+        run: |
+          if [ "${{ env.COUNT }}" = "0" ]; then
+            echo "No new or changed URLs to check."
+            exit 0
+          fi
+          LYCHEE="${{ steps.lychee.outputs.exit_code }}"
+          CONTENT="${{ steps.content.outputs.exit }}"
+          echo "lychee exit: ${LYCHEE:-missing}, content exit: ${CONTENT:-missing}"
+          if [ "$LYCHEE" = "0" ] && [ "$CONTENT" = "0" ]; then
+            echo "All checked links pass."
+            exit 0
+          fi
+          echo "At least one check failed — see the PR comment for reasons."
+          exit 1
+
+  check-all-links:
+    name: Weekly full catalog check
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+
+      - name: List every catalog URL
+        run: |
+          python3 - <<'PY' > all_urls.txt
+          import json
+          data = json.load(open("data/catalog.json"))
+          seen = []
+          for versions in data.values():
+              for entries in versions.values():
+                  for e in entries:
+                      if e["url"] not in seen:
+                          seen.append(e["url"])
+          print("\n".join(seen))
+          PY
+          echo "Catalog URLs: $(grep -c . all_urls.txt)"
+
+      - name: Content check (200, body > 1000 bytes, no error pages)
+        id: content
+        run: |
+          set +e
+          python3 tools/check_links.py --file all_urls.txt --workers 16 --failures-only > content-all.md
+          echo "exit=$?" >> "$GITHUB_OUTPUT"
+
+      - name: HTTP status check (lychee)
+        if: always()
+        id: lychee
+        uses: lycheeverse/lychee-action@v2.9.0
+        with:
+          args: --no-progress --accept 200 --max-concurrency 32 all_urls.txt
+          fail: false
+          jobSummary: false
+          output: lychee-all.md
+
+      - name: List failures in the run summary
+        if: always()
+        run: |
+          {
+            echo "## Weekly link check — every catalog URL"
+            echo
+            echo "This run never blocks merges; fix flagged links in a normal PR."
+            echo
+            echo "### Content check failures (\`tools/check_links.py\`)"
+            echo
+            cat content-all.md
+            echo
+            echo "### HTTP status (lychee)"
+            echo
+            cat lychee-all.md
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Fail the run when links have gone bad
+        if: always()
+        run: |
+          LYCHEE="${{ steps.lychee.outputs.exit_code }}"
+          CONTENT="${{ steps.content.outputs.exit }}"
+          if [ "$LYCHEE" = "0" ] && [ "$CONTENT" = "0" ]; then
+            echo "All catalog links pass."
+            exit 0
+          fi
+          echo "Link failures found — see the run summary."
+          exit 1

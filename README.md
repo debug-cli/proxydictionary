@@ -12,6 +12,7 @@
 <a href="https://github.com/debug-cli/proxydictionary/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/open-issues/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub open issues" src="https://www.shieldcn.dev/github/open-issues/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
 <a href="https://github.com/debug-cli/proxydictionary/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/open-prs/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub open PRs" src="https://www.shieldcn.dev/github/open-prs/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
 <a href="https://github.com/debug-cli/proxydictionary/blob/master/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/license/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub license" src="https://www.shieldcn.dev/github/license/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
+<a href="https://github.com/debug-cli/proxydictionary/actions/workflows/links.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/debug-cli/proxydictionary/actions/workflows/links.yml/badge.svg?branch=master"><img alt="Link check" src="https://github.com/debug-cli/proxydictionary/actions/workflows/links.yml/badge.svg?branch=master"></picture></a>
 </p>
 
 <p align="center">
@@ -71,7 +72,7 @@ As of 2026-11-13 the catalog holds 4,138 entries (4,126 unique URLs) across 31 p
 
 Each entry has a URL, the project it runs, the project's own version when known, and a short note. Projects with a public source repo link to it.
 
-Links are collected, not tested. Mirrors go down and get blocked often. If one fails, try the next.
+Links are checked when they are added: the link-check workflow verifies each new link before it merges. Older mirrors still go down and get blocked often. If one fails, try the next.
 
 ## Adding or fixing a link
 
@@ -82,14 +83,15 @@ Open an issue or a pull request with:
 - Where you found it
 - The date you last saw it load
 
-Contributors and AI agents: read [AGENTS.md](AGENTS.md) before editing the catalog. It covers the data format, how to edit one link's metadata, and how versions and the changelog work.
+Contributors and AI agents: the catalog is edited in `data/catalog.json` ([DATA.md](DATA.md) has copy-paste examples and the validation commands). Read [AGENTS.md](AGENTS.md) for the data format, how to edit one link's metadata, and how versions and the changelog work.
 
 ## Repository
 
 | Path | What it is |
 | --- | --- |
 | `index.html` | The site (sidebar, search, theme toggle, splash, render). Vercel serves it at `/`. |
-| `data/catalog.js` | The catalog: `const data = { project: { version: [entries] } }`. Loaded by a `<script src>` tag, not `fetch()`. |
+| `data/catalog.json` | The catalog source of truth (edit this): project → version → entries. |
+| `data/catalog.js` | The catalog generated from `catalog.json`: `const data = { project: { version: [entries] } }`. Loaded by a `<script src>` tag, not `fetch()`. Never hand-edited. |
 | `proxydictionary.html` | Older copy of the site. Use `index.html`. |
 | `install.bat` | Windows installer for an offline copy |
 | `DATA.md` | Guide for adding and fixing links (copy-paste examples). |
@@ -98,7 +100,8 @@ Contributors and AI agents: read [AGENTS.md](AGENTS.md) before editing the catal
 | `assets/astryx/` | Vendored Astryx CSS v0.7.17 (reset, base, neutral theme, fonts). |
 | `assets/splashes/splashes.txt` | Splash phrases, one per line. |
 | `vercel.json` | Static hosting config |
-| `tools/` | One-off scripts that generated `data/catalog.js`; not part of the site. |
+| `tools/` | Catalog pipeline (`backfill_dates.py`, `catalog_json_to_js.py`) and the link checker (`check_links.py`); not part of the site. |
+| `.github/workflows/links.yml` | Link-check CI: PR gate for new links, weekly full-catalog check. |
 
 ## Changelog
 
@@ -115,9 +118,19 @@ See [CHANGELOG.md](CHANGELOG.md).
 - Left-bar fix: deleted the stray comma in the inline catalog literal that
   killed the whole script; the sidebar now lists all 31 projects on load.
 - Catalog moved from `index.html` to `data/catalog.js` (`<script src>` tag,
-  not `fetch()`); every entry gained `dateAdded` (all entries `2026-11-13`
-  from git history), shown on the card as `[ADDED: …]`; `render()` skips bad
+  not `fetch()`); every entry gained `dateAdded`, shown on the card as
+  `[ADDED: …]` — real per-URL dates from git history (the catalog was built
+  on `master` between 2026-07-07 and 2026-07-09; 4,137 entries `2026-07-07`,
+  `https://nebulos.app` `2026-07-08`), not guesses; `render()` skips bad
   entries and logs them.
+- `data/catalog.json` is now the catalog source of truth (edit it);
+  `data/catalog.js` is generated from it with `tools/catalog_json_to_js.py`
+  and never hand-edited.
+- Link-check workflow (`.github/workflows/links.yml`): every new or changed
+  link is verified on its PR (lychee HTTP status + `tools/check_links.py`
+  content check for error pages) with results posted as a PR comment, and
+  the whole catalog is re-checked weekly. The README gained a link-check
+  status tile.
 - `DATA.md` (link-editing guide with copy-paste examples and the
   `node --check data/catalog.js` validation command) and `AGENTS.md`
   (technical book handbook) added.

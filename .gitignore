@@ -36,3 +36,7 @@ install.bat.bak
 *.tar.gz
 
 .vercel
+
+# Python (tools/ scripts)
+__pycache__/
+*.pyc

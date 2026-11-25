@@ -18,8 +18,12 @@ commands in [Verifying this document](#verifying-this-document). Dates are
    Every tracked file is served as-is.
 2. The site opens from a USB stick: open `index.html` directly from disk
    (`file://`), no server, no internet needed once you have the file.
-3. The catalog lives in `data/catalog.js`, loaded by a `<script src>` tag —
-   never by `fetch()`. Validate every change with `node --check data/catalog.js`.
+3. `data/catalog.json` is the source of truth for the catalog; humans and
+   agents edit it. `data/catalog.js` is generated from it with
+   `python3 tools/catalog_json_to_js.py` and never hand-edited. The site
+   loads `data/catalog.js` with a `<script src>` tag — never by `fetch()`.
+   Validate every change with `python -m json.tool data/catalog.json` and
+   `node --check data/catalog.js`.
 4. `render()` must skip a bad entry, log it to the console, and keep rendering.
    One bad entry must never empty the sidebar again.
 5. After any change to the site, update `AGENTS.md`, the Changelog section of
@@ -37,7 +41,8 @@ commands in [Verifying this document](#verifying-this-document). Dates are
 | Changing the UI | §8 (offline constraint), §9 (Astryx), §11 (sidebar and render) |
 | Touching the splash | §10 |
 | Chasing the empty-sidebar bug | §12 |
-| Reviewing a PR | §15 review checklist, §13 verification |
+| A link check failed on your PR | §18 link-check workflow |
+| Reviewing a PR | §16 review checklist, §13 verification |
 
 ---
 
@@ -51,7 +56,8 @@ no backend, and no database. The host serves bytes; the browser runs everything.
 ┌──────────────────────────── browser tab ─────────────────────────────┐
 │                                                                      │
 │  index.html  ── shell, sidebar, search, theme toggle, splash        │
-│  │  data/catalog.js  ── the catalog: project → version → entries   │
+│  │  data/catalog.js  ── the catalog (generated from catalog.json): │
+│  │                     project → version → entries                 │
 │  │  inline script  ── render(), filterCategories(), copy(), etc.   │
 │  └───────────────┬────────────────────────────────────────────────┘   │
 │                  │ renders URL cards into #category-container        │
@@ -76,20 +82,23 @@ Consequences:
 
 ## 2. Repository map
 
-Tracked tree (2026-11-25, this branch). Counts verified with `wc` and `git`.
+Tracked tree (2026-11-24, this branch). Counts verified with `wc` and `git`.
 
 ```
 .
 ├── index.html                 335 lines  the site: markup + inline script
 ├── proxydictionary.html       older copy of the site; use index.html
-├── data/catalog.js            4,268 lines  the catalog, const data = {...}
-├── DATA.md                    143 lines  the catalog editing guide
+├── data/catalog.json          24,958 lines  the catalog SOURCE OF TRUTH (edit this)
+├── data/catalog.js            4,268 lines  GENERATED from catalog.json; const data = {...}
+├── DATA.md                    the catalog editing guide (JSON workflow)
 ├── AGENTS.md                    this file  engineering handbook
 ├── CHANGELOG.md                  one entry per version
 ├── README.md                     user guide + Changelog section
 ├── install.bat                 Windows offline-copy installer
 ├── vercel.json                 static hosting config (Vercel)
 ├── LICENSE                     MIT
+├── .gitignore                  OS/editor/secret/Python (__pycache__) patterns
+├── .github/workflows/links.yml   link-check CI (PR gate + weekly full check)
 ├── assets/astryx/              vendored Astryx CSS, v0.7.17, MIT
 │   ├── reset.css               11,928 bytes
 │   ├── astryx.css              314,582 bytes
@@ -103,48 +112,63 @@ Tracked tree (2026-11-25, this branch). Counts verified with `wc` and `git`.
 │   └── SpaceGrotesk-Bold.woff2     41,780 bytes
 ├── assets/splashes/
 │   └── splashes.txt            53 lines, 48 phrases
-└── tools/                      one-off build scripts (not part of the site)
+└── tools/                      catalog pipeline + link-check scripts (not loaded by the site)
+    ├── backfill_dates.py       dateAdded from git history (one history pass)
+    ├── catalog_json_to_js.py   generates data/catalog.js from data/catalog.json
+    ├── check_links.py          link content checker (CI + local)
+    ├── build_catalog.py        one-off: built the first catalog.js from index.html
+    └── migrate_index.py        one-off: rewrote index.html for the v2 layout
 ```
 
 - Catalog: 31 projects, 33 version blocks, 4,138 entries, 4,126 unique URLs.
   Interstellar mirrors make up 4,014 of the entries.
-- All entry dates come from git history: the single commit on `master`
-  (`2026-11-13`) introduced the catalog, so every entry carries
-  `dateAdded: "2026-11-13"`. No per-entry dates are known.
-- `tools/` holds the one-off scripts that generated `data/catalog.js`; they are
-  not loaded by the site and may change freely.
+- Entry dates are real per-URL git dates, not backfill guesses. The catalog
+  was built by several commits on `master` between 2026-07-07 and 2026-07-09
+  (the initial payload, then the Nebulo OS category); the 2026-11-13 merge
+  (PR #1) only rewrote the README. `tools/backfill_dates.py` sets each
+  entry's `dateAdded` to the date of the first commit that introduced its
+  URL in the history of `index.html` on `master` (one pass over the history,
+  no per-URL `git log`). Result: 4,137 entries `2026-07-07`, one entry
+  (`https://nebulos.app`, added with the Nebulo OS category) `2026-07-08`,
+  zero unknowns. Spot-checked 14 URLs against `git log -S`; all match.
 
 ---
 
 ## 3. How data is found and added
 
-The catalog is `data/catalog.js`, one assignment:
+The catalog source of truth is `data/catalog.json`, a plain JSON object:
 
-```js
-const data = {
+```json
+{
   "Project": {
     "v1": [
-      {"url": "...", "notes": "...", "version": "v1", "dateAdded": "2026-11-13"},
+      {
+        "url": "...",
+        "notes": "...",
+        "version": "v1",
+        "dateAdded": "2026-07-07"
+      }
     ],
-    "Unknown": [
-      ...
-    ],
-  },
-};
+    "Unknown": [ ... ]
+  }
+}
 ```
 
-Shape: `project → version → [ {url, notes, version, dateAdded} ]`. Entries are
-flat: one entry per visible line, so a bad line is easy to spot.
+Shape: `project → version → [ {url, notes, version, dateAdded} ]`.
+`data/catalog.js` is generated from it (`python3 tools/catalog_json_to_js.py`,
+one entry per line) and is what `index.html` loads with a `<script src>` tag.
 
 How links get in:
 
 1. A human or agent finds a mirror URL and notes where it was seen.
-2. Add one entry line to the right project and version block (§6).
-3. Run `node --check data/catalog.js`. It must pass.
+2. Add one entry to the right project and version block in
+   `data/catalog.json` (§6).
+3. Regenerate `data/catalog.js` and validate both files (§6). They must pass.
 4. Open `index.html`, click the project, confirm the card shows the link,
    the note, and `[ADDED: <date>]`.
-5. Send a pull request. The branch stays a draft; no merge to `master` without
-   explicit user approval.
+5. Send a pull request. The link-check workflow (§18) checks every new link;
+   a dead or error-page link fails the check and blocks the merge. The branch
+   stays a draft; no merge to `master` without explicit user approval.
 
 Where links come from: public mirror lists, project Discords, READMEs, and
 user reports. Never invent a URL and never invent a date.
@@ -158,12 +182,13 @@ user reports. Never invent a URL and never invent a date.
 - `version` (string): the project's own version when known, otherwise
   `"Unknown"`.
 - `dateAdded` (string, `YYYY-MM-DD`): the date the entry was added. Backfill
-  only from git history or the README; otherwise `"unknown"`. Never invent.
+  only from real git history (`tools/backfill_dates.py`) or the README;
+  otherwise `"unknown"`. Never invent.
 
 What must never change in an edit: no invented URLs, no invented dates, no
-dropped entries, no extra or missing entry keys. See DATA.md for the
-copy-paste examples (add one link, fix one link's metadata, add a project
-section).
+dropped entries, no extra or missing entry keys, no hand-edits to
+`data/catalog.js`. See DATA.md for the copy-paste examples (add one link,
+fix one link's metadata, add a project section).
 
 ---
 
@@ -176,7 +201,7 @@ Each rendered card shows:
 | The link | `url` | `https://nebulos.app` |
 | Small text under the link | `notes` → `[IDENT: ...]` | `[IDENT: Nebulo OS Gateway]` |
 | Version | `version` → `[VER: ...]` | `[VER: v1]` |
-| Date added | `dateAdded` → `[ADDED: ...]` | `[ADDED: 2026-11-13]` or `[ADDED: unknown]` |
+| Date added | `dateAdded` → `[ADDED: ...]` | `[ADDED: 2026-07-08]` or `[ADDED: unknown]` |
 
 The URL also gets a COPY button that writes it to the clipboard. Above the
 cards, the section header shows the project name and its GitHub link from
@@ -188,23 +213,26 @@ cards, the section header shows the project name and its GitHub link from
 
 Human workflow (under a minute):
 
-1. Open `data/catalog.js`. Find the project section and version block.
-2. Paste one entry line: `{"url": "...", "notes": "...", "version": "...", "dateAdded": "YYYY-MM-DD"},`
-3. Validate: `node --check data/catalog.js`
+1. Open `data/catalog.json`. Find the project section and version block.
+2. Paste one entry object into the array: `{"url": "...", "notes": "...",
+   "version": "...", "dateAdded": "YYYY-MM-DD"}`
+3. Regenerate and validate (see below).
 4. Open `index.html` from disk or the local server; click the project; confirm
    the card.
 5. Commit with the data change, the AGENTS.md update, and both changelog
    updates in one change.
 
-The validation command is the gate:
+The validation commands are the gate:
 
 ```bash
-node --check data/catalog.js
+python -m json.tool data/catalog.json > /dev/null   # the JSON must parse
+python3 tools/catalog_json_to_js.py                 # regenerate catalog.js
+node --check data/catalog.js                        # the JS must parse
 ```
 
-It parses the file as JavaScript. Any syntax error fails the command and the
-change does not ship. This is documented in DATA.md and here so agents and
-humans run the same check.
+`python3 tools/catalog_json_to_js.py --check` verifies the two files are in
+sync without rewriting. Any failure stops the change from shipping. This is
+documented in DATA.md and here so agents and humans run the same checks.
 
 ---
 
@@ -319,9 +347,18 @@ the welcome title use Space Mono. Both families are self-hosted in
   (`SpaceGrotesk-Bold.woff2`, 41,780 bytes).
 
 No Google Fonts CDN link is used: a CDN link breaks `file://` offline use.
-Only the weights used are shipped; the Figtree woff2s referenced by the
-vendored Astryx `fonts.css` are deliberately not copied (they 404 harmlessly
-and fall back to the system sans stack).
+Only the weights used are shipped.
+
+There are two font folders; do not mix them up:
+
+- **`assets/fonts/` — the site fonts.** Space Mono and Space Grotesk, the
+  woff2 files listed above. They are vendored in the repo, they load, and
+  the site's `@font-face` rules in `index.html` point at them.
+- **`assets/astryx/fonts/` — the Astryx Figtree fonts, deliberately NOT in
+  the repo.** The vendored Astryx `assets/astryx/fonts.css` points at
+  `./fonts/figtree-*.woff2` (that resolves to `assets/astryx/fonts/`), but
+  those woff2 files were never copied. Those requests 404 and fall back to
+  the system sans stack. The 404s are expected and harmless.
 
 ---
 
@@ -407,10 +444,13 @@ before it ships. One bad entry can never kill the whole page again.
 Run these on every change:
 
 ```bash
-node --check data/catalog.js        # the catalog must parse
-git diff --check                    # no whitespace errors
-node --check <extracted script>     # any extracted or added JavaScript
-ls assets/fonts/*.woff2             # all five font files present (158,916 bytes total)
+python -m json.tool data/catalog.json > /dev/null   # the catalog JSON must parse
+python3 tools/catalog_json_to_js.py --check         # catalog.js matches the JSON
+node --check data/catalog.js                        # the generated JS must parse
+python3 -m py_compile tools/*.py                    # every tools/ script compiles
+git diff --check                                    # no whitespace errors
+node --check <extracted script>                     # any extracted or added JavaScript
+ls assets/fonts/*.woff2                             # all five font files (158,916 bytes total)
 ```
 
 Manual checks (Chrome, Edge, or Helium; the preview URL counts):
@@ -434,6 +474,8 @@ Manual checks (Chrome, Edge, or Helium; the preview URL counts):
     (fallback list), no console errors from missing fetch.
 12. Break one entry in a scratch copy of `data/catalog.js`: the sidebar still
     renders the other projects and the console logs the skip.
+13. URL cards show real per-URL dates from git history (e.g. `2026-07-07`
+    and `2026-07-08`), not one blanket date.
 
 Report each `node --check` and `git diff --check` result in the change note.
 
@@ -466,16 +508,19 @@ Report each `node --check` and `git diff --check` result in the change note.
 
 ### Add one link
 
-1. Edit `data/catalog.js`: one entry line in the project's version block.
-2. `node --check data/catalog.js` — must pass.
+1. Edit `data/catalog.json`: one entry object in the project's version
+   block.
+2. Regenerate and validate: `python3 tools/catalog_json_to_js.py`, then
+   `node --check data/catalog.js` and `python -m json.tool data/catalog.json`.
 3. Open `index.html`, click the project, confirm the card and `[ADDED: …]`.
 4. Update AGENTS.md, README.md Changelog section, CHANGELOG.md in the same
-   change (§5 hard rule 5).
+   change (hard rule 5).
 
 ### Fix one link's metadata
 
-Change one field on one line (`notes`, `version`, or `dateAdded`). Keep the
-`url` identical. Run `node --check data/catalog.js`, reload, confirm the card.
+Change one field on one entry (`notes`, `version`, or `dateAdded`) in
+`data/catalog.json`. Keep the `url` identical. Regenerate `data/catalog.js`,
+run the validation commands, reload, confirm the card.
 
 ### Add a whole project section
 
@@ -495,6 +540,8 @@ entry in `index.html` only if a GitHub link should show on the card.
 
 ## 16. Review checklist
 
+- [ ] `python -m json.tool data/catalog.json` parses
+- [ ] `python3 tools/catalog_json_to_js.py --check` says the JS matches
 - [ ] `node --check data/catalog.js` passes
 - [ ] `git diff --check` is clean
 - [ ] `AGENTS.md`, the README Changelog section, and `CHANGELOG.md` updated
@@ -519,8 +566,55 @@ entry in `index.html` only if a GitHub link should show on the card.
 - `fonts.css` 404s for the missing Figtree woff2 files are deliberate per the
   task, but noisy in the console. Space Mono and Space Grotesk are vendored
   in `assets/fonts/` and do load; the Figtree files remain omitted.
-- No CI or test runner exists in this repo; verification is manual plus
-  `node --check`.
+- CI exists only for link checking (§18); verification of code and data is
+  manual plus `node --check` and `python -m json.tool`.
+
+---
+
+## 18. Link-check workflow
+
+`.github/workflows/links.yml` checks that catalog links actually work.
+
+What it checks, two ways, per link:
+
+1. **HTTP status with lychee** (`lycheeverse/lychee-action`), the standard
+   link checker.
+2. **Content with `tools/check_links.py`**: the page must return HTTP 200,
+   the body must be longer than 1,000 bytes, and neither the `<title>` nor
+   the body may contain error-page markers ("404" as a standalone token,
+   "not found", "access denied", "attention required", Cloudflare challenge
+   phrases, parked-domain notices). A 200 alone proves nothing: error pages
+   and Cloudflare challenge pages return 200 too.
+
+When it runs:
+
+- **Pull requests that touch `data/catalog.json` or `data/catalog.js`**:
+  only the URLs added or changed in the PR diff are checked — never all
+  4,138. Results are posted as a comment on the PR (updated on every push),
+  listing each checked link with pass or fail and the reason. A failing link
+  fails the check, which blocks the merge.
+- **Weekly (Mondays 06:17 UTC) and on manual dispatch**: every catalog URL
+  is checked and failures are listed in the workflow run summary. That run
+  never blocks merges; fix flagged links in a normal PR.
+
+How to read the PR comment: each URL gets one table row in the lychee
+section and one in the content-check section. A link is only good when both
+sections pass it. The reason column says which rule fired (HTTP status,
+body too small, or the marker found).
+
+How to fix a flagged link: check the URL in a browser. If the mirror is
+gone, remove the entry (with the user's approval for removals) or replace
+`url` with a working mirror as a new entry (never silently replace a URL);
+if the page is healthy but flagged, the marker list in `tools/check_links.py`
+may need tuning — adjust it in the same PR and say why.
+
+**No ICMP ping gate.** GitHub-hosted runners are Azure VMs where inbound
+ICMP is blocked, so `ping` cannot work there. HTTP is the gate. Do not
+re-add ping.
+
+The README carries a link-check status tile (official GitHub workflow badge
+for `links.yml` on `master`; the shieldcn.dev mirror's workflow-status badge
+could not be verified, so the official badge is the documented fallback).
 
 ---
 
@@ -539,13 +633,17 @@ ship a change with a stale `AGENTS.md` or a missing changelog entry.
 Everything here is checkable from a clone:
 
 ```bash
-wc -l index.html data/catalog.js assets/splashes/splashes.txt      # 335, 4268, 53
+wc -l index.html data/catalog.js data/catalog.json assets/splashes/splashes.txt
+#        335        4268          24958          53
 wc -c assets/astryx/reset.css assets/astryx/astryx.css             # 11928, 314582
 wc -c assets/astryx/theme-neutral.css assets/astryx/fonts.css      # 30284, 3751
 wc -c assets/fonts/*.woff2                                         # 158916 total (5 files)
 grep -vcE '^\s*(#|$)' assets/splashes/splashes.txt                 # 48 phrases
-git rev-list --all --count                                         # 3 as of this change (grows per commit)
+git rev-list --all --count                                         # 32 commits
+python -m json.tool data/catalog.json > /dev/null                  # exit 0
+python3 tools/catalog_json_to_js.py --check                        # catalog.js matches the JSON
 node --check data/catalog.js                                       # exit 0
+python3 -m py_compile tools/*.py                                   # exit 0
 git diff --check                                                   # clean
 ```
 

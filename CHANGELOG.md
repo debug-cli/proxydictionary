@@ -40,9 +40,16 @@ One entry per version. Dates are the day the change landed on the branch
 - Moved the catalog out of `index.html` into `data/catalog.js`, loaded with a
   `<script src>` tag (not `fetch()`), so `file://` offline use still works.
 - Added `dateAdded` (YYYY-MM-DD) to every entry; shown on the URL card as
-  `[ADDED: …]`. All 4,138 entries carry `2026-11-13`, the date the catalog was
-  introduced in git history (the single commit on `master`); no per-entry
-  dates are known.
+  `[ADDED: …]`. Dates come from real git history: the catalog was built by
+  several commits on `master` between 2026-07-07 and 2026-07-09, and each
+  entry carries the date of the first commit that introduced its URL in the
+  history of `index.html` on `master` (4,137 entries `2026-07-07`;
+  `https://nebulos.app`, added with the Nebulo OS category, `2026-07-08`;
+  zero unknowns). Produced by `tools/backfill_dates.py`, one pass over the
+  history, spot-checked with `git log -S`. An earlier backfill of
+  `2026-11-13` on every entry (claimed to be "the single commit that
+  introduced the catalog") was wrong and is gone; the docs forbid invented
+  dates.
 - Wrote `DATA.md`: the single guide for adding links, with copy-paste examples
   for adding one link, fixing one link's metadata, and adding a project
   section, plus the validation command `node --check data/catalog.js`.
@@ -85,6 +92,33 @@ One entry per version. Dates are the day the change landed on the branch
   `index.html`, matching the documented link order.
 - Maintenance rule: `AGENTS.md`, the Changelog section of `README.md`, and
   `CHANGELOG.md` must be updated in the same change as the code.
+
+### Catalog source of truth (JSON)
+- `data/catalog.json` is now the file humans and agents edit: a top-level
+  object, project → version → entry array, pretty-printed with 2-space
+  indent. Same 4,138 entries, same order, same metadata as the JS.
+- `data/catalog.js` is generated from the JSON by
+  `tools/catalog_json_to_js.py` (one entry per line, the historical format),
+  committed alongside it, and never hand-edited. The site still loads it
+  with a `<script src>` tag (never `fetch()`), so `file://` offline use
+  keeps working.
+- Validation gates both files: `python -m json.tool data/catalog.json`,
+  `python3 tools/catalog_json_to_js.py --check`, `node --check data/catalog.js`.
+  DATA.md teaches the JSON workflow with copy-paste examples.
+
+### Link-check workflow
+- New `.github/workflows/links.yml`: on pull requests that touch the catalog
+  files, the URLs added or changed in the PR diff are checked two ways —
+  lychee for HTTP status, `tools/check_links.py` for content (HTTP 200,
+  body > 1,000 bytes, no error-page markers such as 404/not found/access
+  denied/attention required/Cloudflare challenges/parked domains). Results
+  are posted as a PR comment; a failing link fails the check and blocks the
+  merge. A weekly run checks every catalog URL and lists failures in the
+  run summary without blocking merges.
+- README gained a link-check status tile (official GitHub workflow badge for
+  `links.yml` on `master`; the shieldcn.dev workflow-status badge could not
+  be verified). No ICMP ping gate: GitHub runners block inbound ICMP, so
+  HTTP is the gate.
 
 ## v1.0.0 — 2026-11-13 — Initial Release
 
