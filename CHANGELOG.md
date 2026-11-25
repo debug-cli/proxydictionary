@@ -123,6 +123,12 @@ One entry per version. Dates are the day the change landed on the branch
   characters (GitHub caps a comment at 65,536). The first run on this PR
   checked all 4,126 URLs and the uncapped comment failed to post; the
   truncated comment now posts and the full output stays in the run log.
+- Transient-fetch retry: `tools/check_links.py` retries a URL up to 3 times
+  (2s, then 4s backoff) when the fetch itself fails (connection reset,
+  disconnect, timeout, DNS). A real HTTP status or a content verdict is
+  never retried. Added 2026-11-25 after the gate failed three runs in a row
+  on live links (a false "404" marker, then two connection resets from one
+  host that returns HTTP 200 everywhere else).
 
 ### Dead-link cleanup
 - The whole catalog was checked link by link on 2026-11-25 (lychee +
