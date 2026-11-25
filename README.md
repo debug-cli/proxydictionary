@@ -2,7 +2,7 @@
 
 <h1 align="center"><a href="https://proxydict.vercel.app"><img alt="proxydict" src="assets/title.svg" width="760"></a></h1>
 
-<p>A single-file, offline index of public web proxy mirrors, grouped by project.</p>
+<p>A single-page, offline index of public web proxy mirrors, grouped by project.</p>
 
 <p align="center">
 <a href="https://github.com/debug-cli/proxydictionary/stargazers"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/stars/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub stars" src="https://www.shieldcn.dev/github/stars/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
@@ -29,7 +29,7 @@
 
 Open https://proxydict.vercel.app. Pick a project in the sidebar, then copy or open a link.
 
-The site is one HTML file with the catalog built in. It needs no server, no account, and no internet connection once you have the file.
+The site is one page: `index.html` loads the catalog from `data/catalog.js`. It needs no server, no account, and no internet connection once you have the file. Open `index.html` directly from disk (file://) and it works offline, even from a USB stick.
 
 ## Offline copy
 
@@ -88,15 +88,52 @@ Contributors and AI agents: read [AGENTS.md](AGENTS.md) before editing the catal
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The site and the catalog. Vercel serves it at `/`. |
+| `index.html` | The site (sidebar, search, theme toggle, splash, render). Vercel serves it at `/`. |
+| `data/catalog.js` | The catalog: `const data = { project: { version: [entries] } }`. Loaded by a `<script src>` tag, not `fetch()`. |
 | `proxydictionary.html` | Older copy of the site. Use `index.html`. |
 | `install.bat` | Windows installer for an offline copy |
+| `DATA.md` | Guide for adding and fixing links (copy-paste examples). |
+| `AGENTS.md` | Engineering handbook for anyone changing this repository. |
+| `CHANGELOG.md` | One entry per version. |
+| `assets/astryx/` | Vendored Astryx CSS v0.7.17 (reset, base, neutral theme, fonts). |
+| `assets/splashes/splashes.txt` | Splash phrases, one per line. |
 | `icons/` | UI icons |
 | `vercel.json` | Static hosting config |
+| `tools/` | One-off scripts that generated `data/catalog.js`; not part of the site. |
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
+
+### v2.0.0 — 2026-11-25
+
+- Astryx design language migration (neutral theme, vendored
+  `assets/astryx/reset.css`, `astryx.css`, `theme-neutral.css`, `fonts.css`
+  from `@astryxdesign/core@0.7.17` and `@astryxdesign/theme-neutral@0.7.17`,
+  `data-astryx-theme="neutral"`, `light-dark()` tokens).
+- Splash messages moved to `assets/splashes/splashes.txt` (48 phrases), fetched
+  over HTTP with an inline fallback for `file://`, rendered as text nodes.
+- Left-bar fix: deleted the stray comma in the inline catalog literal that
+  killed the whole script; the sidebar now lists all 31 projects on load.
+- Catalog moved from `index.html` to `data/catalog.js` (`<script src>` tag,
+  not `fetch()`); every entry gained `dateAdded` (all entries `2026-11-13`
+  from git history), shown on the card as `[ADDED: …]`; `render()` skips bad
+  entries and logs them.
+- `DATA.md` (link-editing guide with copy-paste examples and the
+  `node --check data/catalog.js` validation command) and `AGENTS.md`
+  (technical book handbook) added.
+
+### v1.0.0 — 2026-11-13 — Initial Release
+
+- Single-file offline index of public web proxy mirrors, grouped by project.
+- 31 projects, 4,138 entries (4,126 unique URLs); no build step, no
+  dependencies; runs from a USB stick by opening `index.html` from disk.
+
+## Unchanged
+
+- Data entries, URLs, versions, and notes: nothing dropped, invented, or
+  altered. Offline behavior and the no-build-step rule still hold.
+
 
 ## License
 
