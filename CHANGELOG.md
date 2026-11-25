@@ -124,6 +124,21 @@ One entry per version. Dates are the day the change landed on the branch
   checked all 4,126 URLs and the uncapped comment failed to post; the
   truncated comment now posts and the full output stays in the run log.
 
+### Dead-link cleanup
+- The whole catalog was checked link by link on 2026-11-25 (lychee +
+  `tools/check_links.py`, with a second pass over every non-403 failure to
+  rule out transient errors; 14 links revived on retry and were kept).
+  4,066 entries no longer load and were removed from `data/catalog.json`
+  (and the generated `data/catalog.js`).
+- The biggest loss is the `s3.amazonaws.com/elliotslinks` bucket: Amazon
+  disabled all access to it (`AllAccessDisabled`), so all 3,694 Interstellar
+  mirrors on it are gone. `https://nebulos.app` is gone too (its Vercel
+  deployment returns `DEPLOYMENT_NOT_FOUND`).
+- 72 entries (69 unique URLs) across 12 projects remain, all verified live.
+  Interstellar keeps 54 entries. 19 projects lost every link and were
+  removed from the catalog.
+- AGENTS.md, README.md, and CHANGELOG.md counts updated to the new numbers.
+
 ## v1.0.0 — 2026-11-13 — Initial Release
 
 - Single-file offline index of public web proxy mirrors, grouped by project.
@@ -134,7 +149,7 @@ One entry per version. Dates are the day the change landed on the branch
 
 ## Unchanged (still true after v2.0.0)
 
-- Data entries, URLs, versions, and notes: nothing dropped, invented, or
-  altered. Verified entry-by-entry against the previous version.
+- Data entries: the 72 kept entries are unchanged, nothing invented or
+  altered. The 4,066 removed entries are the dead-link cleanup above.
 - Offline behavior: `index.html` opens from disk with no server.
 - No build step, no dependencies, no bundler, no framework, no npm.
