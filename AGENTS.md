@@ -600,7 +600,14 @@ When it runs:
 How to read the PR comment: each URL gets one table row in the lychee
 section and one in the content-check section. A link is only good when both
 sections pass it. The reason column says which rule fired (HTTP status,
-body too small, or the marker found).
+body too small, or the marker found). On a bulk change the comment is
+capped: each section is truncated to 20,000 characters (GitHub caps a
+comment at 65,536) and the full output is in the workflow run log.
+
+A bulk change touches every catalog line, so the gate checks all 4,126 URLs
+and fails on pre-existing dead mirrors. That failure is about old links,
+not the change; fix dead links in a separate PR, never by weakening the
+gate.
 
 How to fix a flagged link: check the URL in a browser. If the mirror is
 gone, remove the entry (with the user's approval for removals) or replace
