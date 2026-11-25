@@ -1,0 +1,53 @@
+# Proxy Dictionary splash messages.
+# One phrase per line. Short, casual, one-liners; some personal, some about the site.
+# A line in [text](https://...) form renders as literal text (this page never uses innerHTML).
+# Keep this list in sync with the inline fallback in index.html.
+
+One HTML file, zero excuses.
+Blocked? Try the next one.
+Filters gonna filter. Mirrors gonna mirror.
+No build step. No account. No sign-up.
+Works from a USB stick. Seriously.
+4,138 links and still no login screen.
+Open it on a locked laptop. That is the point.
+Vanilla JS. No bundle. No build step.
+If mirror #4 dies, mirror #4,014 waits.
+Dark mode for late-night bypassing.
+Copy the URL, paste it, breathe.
+Consolas at 13px, forever.
+My notes say this one loaded last week.
+The sidebar is just a list. A very long list.
+School Wi-Fi, meet your match.
+31 projects, one search box.
+No algorithm decides what you see here.
+Bookmark it. Email it to yourself. Put it on a drive.
+Links rot. The list survives.
+Not a VPN. Not a proxy server. Just a phonebook.
+Read the notes. They know things.
+One file. 31 projects. Thousands of mirrors.
+No rate limit on reading this page.
+Mirrors go down. This list stays up.
+Open source. Open access. Open tab.
+Search the sidebar. It searches back.
+Copied to clipboard. Now what? Open it.
+No data sold. There is no data.
+Proxy Dictionary: the name is literal.
+Reload and the splash changes. So does nothing else.
+Hosted anywhere. Runs from disk.
+Theme toggle: because your eyes have opinions.
+Next link, please.
+Unblock something today.
+The README says links are collected, not tested. Fair.
+Mobile width works. Try it on your phone.
+No newsletter. Ever.
+Interstellar alone is 4,014 mirrors. Let that sink in.
+Powered by nothing but a browser tab.
+No cookies were harmed making this page.
+My mouse hovers over COPY more than I admit.
+Pull to refresh. Well, reload to refresh.
+The web is bigger than your network allows.
+Some of these links are older than my browser.
+5k+ mirrors at your fingertips? Closer to 4k, honestly.
+I check the README date more than the links.
+[Report a dead mirror →](https://github.com/debug-cli/proxydictionary/issues/new)
+[Add a missing link →](https://github.com/debug-cli/proxydictionary/issues/new)

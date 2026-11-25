@@ -2,7 +2,7 @@
 
 <h1 align="center"><a href="https://proxydict.vercel.app"><img alt="proxydict" src="assets/title.svg" width="760"></a></h1>
 
-<p>A single-file, offline index of public web proxy mirrors, grouped by project.</p>
+<p>A single-page, offline index of public web proxy mirrors, grouped by project.</p>
 
 <p align="center">
 <a href="https://github.com/debug-cli/proxydictionary/stargazers"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/stars/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub stars" src="https://www.shieldcn.dev/github/stars/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
@@ -12,6 +12,7 @@
 <a href="https://github.com/debug-cli/proxydictionary/issues"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/open-issues/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub open issues" src="https://www.shieldcn.dev/github/open-issues/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
 <a href="https://github.com/debug-cli/proxydictionary/pulls"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/open-prs/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub open PRs" src="https://www.shieldcn.dev/github/open-prs/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
 <a href="https://github.com/debug-cli/proxydictionary/blob/master/LICENSE"><picture><source media="(prefers-color-scheme: dark)" srcset="https://www.shieldcn.dev/github/license/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=dark&font=jetbrains-mono"><img alt="GitHub license" src="https://www.shieldcn.dev/github/license/debug-cli/proxydictionary.svg?variant=flat-square&size=sm&mode=light&font=jetbrains-mono"></picture></a>
+<a href="https://github.com/debug-cli/proxydictionary/actions/workflows/links.yml"><picture><source media="(prefers-color-scheme: dark)" srcset="https://github.com/debug-cli/proxydictionary/actions/workflows/links.yml/badge.svg?branch=master"><img alt="Link check" src="https://github.com/debug-cli/proxydictionary/actions/workflows/links.yml/badge.svg?branch=master"></picture></a>
 </p>
 
 <p align="center">
@@ -29,7 +30,7 @@
 
 Open https://proxydict.vercel.app. Pick a project in the sidebar, then copy or open a link.
 
-The site is one HTML file with the catalog built in. It needs no server, no account, and no internet connection once you have the file.
+The site is one page: `index.html` loads the catalog from `data/catalog.js`. It needs no server, no account, and no internet connection once you have the file. Open `index.html` directly from disk (file://) and it works offline, even from a USB stick.
 
 ## Offline copy
 
@@ -67,11 +68,18 @@ Then reload the page with Ctrl + Shift + R.
 
 ## What's in it
 
-As of 2026-11-13 the catalog holds 4,138 entries (4,092 unique URLs) across 31 projects. Interstellar mirrors make up 4,014 of them. Other projects include Koopbin, Nebulo OS, Lucide, Dominum UBG, DogeUB, Lunar, and a general Website Unblockers list.
+As of 2026-11-25 the catalog holds 72 entries (69 unique URLs) across 12 projects. Interstellar mirrors make up 54 of them. Other projects include Dominum UBG, Lucide, DogeUB, Fern, and a few single-link projects. A dead-link cleanup on 2026-11-25 removed 4,066 entries that no longer load; the catalog was 4,138 entries before it.
 
 Each entry has a URL, the project it runs, the project's own version when known, and a short note. Projects with a public source repo link to it.
 
-Links are collected, not tested. Mirrors go down and get blocked often. If one fails, try the next.
+Links are checked when they are added: the link-check workflow verifies each new link before it merges. Older mirrors still go down and get blocked often. If one fails, try the next.
+
+## Link checks
+
+Two automatic checks keep the catalog honest (`.github/workflows/links.yml`):
+
+- **On a pull request that touches the catalog** (`data/catalog.json` or `data/catalog.js`): only the links added or changed in that PR are checked. A link must return HTTP 200, serve a real page over 1,000 bytes, and not be an error page. Results are posted as a comment on the PR, and a failing link blocks the merge. A PR that only changes docs or the site never runs this check.
+- **Weekly, Mondays 06:17 UTC**: every link in the catalog is checked the same way. Failures are listed in the workflow run summary. That run never blocks a merge; fix flagged links in a normal PR.
 
 ## Adding or fixing a link
 
@@ -82,21 +90,86 @@ Open an issue or a pull request with:
 - Where you found it
 - The date you last saw it load
 
-Contributors and AI agents: read [AGENTS.md](AGENTS.md) before editing the catalog. It covers the data format, how to edit one link's metadata, and how versions and the changelog work.
+Contributors and AI agents: the catalog is edited in `data/catalog.json` ([DATA.md](DATA.md) has copy-paste examples and the validation commands). Read [AGENTS.md](AGENTS.md) for the data format, how to edit one link's metadata, and how versions and the changelog work.
 
 ## Repository
 
 | Path | What it is |
 | --- | --- |
-| `index.html` | The site and the catalog. Vercel serves it at `/`. |
+| `index.html` | The site (sidebar, search, theme toggle, splash, render). Vercel serves it at `/`. |
+| `data/catalog.json` | The catalog source of truth (edit this): project → version → entries. |
+| `data/catalog.js` | The catalog generated from `catalog.json`: `const data = { project: { version: [entries] } }`. Loaded by a `<script src>` tag, not `fetch()`. Never hand-edited. |
 | `proxydictionary.html` | Older copy of the site. Use `index.html`. |
 | `install.bat` | Windows installer for an offline copy |
-| `icons/` | UI icons |
+| `DATA.md` | Guide for adding and fixing links (copy-paste examples). |
+| `AGENTS.md` | Engineering handbook for anyone changing this repository. |
+| `CHANGELOG.md` | One entry per version. |
+| `assets/astryx/` | Vendored Astryx CSS v0.7.17 (reset, base, neutral theme, fonts). |
+| `assets/splashes/splashes.txt` | Splash phrases, one per line. |
 | `vercel.json` | Static hosting config |
+| `tools/` | Catalog pipeline (`backfill_dates.py`, `catalog_json_to_js.py`) and the link checker (`check_links.py`); not part of the site. |
+| `.github/workflows/links.yml` | Link-check CI: PR gate for new links, weekly full-catalog check. |
 
 ## Changelog
 
 See [CHANGELOG.md](CHANGELOG.md).
+
+### v2.0.0 — 2026-11-24
+
+- Astryx design language migration (neutral theme, vendored
+  `assets/astryx/reset.css`, `astryx.css`, `theme-neutral.css`, `fonts.css`
+  from `@astryxdesign/core@0.7.17` and `@astryxdesign/theme-neutral@0.7.17`,
+  `data-astryx-theme="neutral"`, `light-dark()` tokens).
+- Splash messages moved to `assets/splashes/splashes.txt` (48 phrases), fetched
+  over HTTP with an inline fallback for `file://`, rendered as text nodes.
+- Left-bar fix: deleted the stray comma in the inline catalog literal that
+  killed the whole script; the sidebar now lists all 31 projects on load.
+- Catalog moved from `index.html` to `data/catalog.js` (`<script src>` tag,
+  not `fetch()`); every entry gained `dateAdded`, shown on the card as
+  `[ADDED: …]` — real per-URL dates from git history (the catalog was built
+  on `master` between 2026-07-07 and 2026-07-09; 4,137 entries `2026-07-07`,
+  `https://nebulos.app` `2026-07-08`), not guesses; `render()` skips bad
+  entries and logs them.
+- `data/catalog.json` is now the catalog source of truth (edit it);
+  `data/catalog.js` is generated from it with `tools/catalog_json_to_js.py`
+  and never hand-edited.
+- Link-check workflow (`.github/workflows/links.yml`): every new or changed
+  link is verified on its PR (lychee HTTP status + `tools/check_links.py`
+  content check for error pages) with results posted as a PR comment, and
+  the whole catalog is re-checked weekly. The README gained a link-check
+  status tile. On bulk changes the comment is capped per section so it
+  posts instead of failing GitHub's comment size limit. Transient fetch
+  failures are retried up to 3 times before a link fails (a host can drop
+  a single request from a GitHub runner while the link is alive).
+- `DATA.md` (link-editing guide with copy-paste examples and the
+  `node --check data/catalog.js` validation command) and `AGENTS.md`
+  (technical book handbook) added.
+- Pre-release fixes: heading contrast corrected in both themes (all
+  `light-dark()` token pairs reordered to `light-dark(light, dark)`; headings
+  use the site `--text` token), sidebar close icon replaced with an inline
+  Lucide `chevrons-left` SVG that no longer squishes when collapsed, fonts
+  switched to self-hosted Space Mono (code, URLs, headings) and Space Grotesk
+  (body, sidebar, buttons) with no CDN, and the README counts corrected to
+  4,138 entries / 4,126 unique URLs / 31 projects.
+- Dead-link cleanup (2026-11-25): the whole catalog was checked link by link
+  (lychee + `tools/check_links.py`); 4,066 entries no longer load and were
+  removed, including the entire `s3.amazonaws.com/elliotslinks` bucket
+  (Amazon disabled all access to it, so every Interstellar mirror on it is
+  gone) and `https://nebulos.app` (its Vercel deployment is gone). 72 entries
+  (69 unique URLs) across 12 projects remain, all verified live; 19 projects
+  lost every link and were removed.
+
+### v1.0.0 — 2026-11-13 — Initial Release
+
+- Single-file offline index of public web proxy mirrors, grouped by project.
+- 31 projects, 4,138 entries (4,126 unique URLs); no build step, no
+  dependencies; runs from a USB stick by opening `index.html` from disk.
+
+## Unchanged
+
+- Data entries, URLs, versions, and notes: nothing dropped, invented, or
+  altered. Offline behavior and the no-build-step rule still hold.
+
 
 ## License
 
